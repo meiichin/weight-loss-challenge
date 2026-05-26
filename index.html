@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surat Perjanjian: Weight Loss Challenge 2026</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans for UI, Space Grotesk for Headings -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="app-container">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="badge">🔥 TANTANGAN RESMI</div>
+            <h1>Surat Perjanjian</h1>
+            <p class="subtitle">Weight Loss Challenge (2 Bulan)</p>
+            
+            <!-- Countdown Timer -->
+            <div class="countdown-container">
+                <p class="countdown-label">SISA WAKTU TANTANGAN</p>
+                <div class="timer">
+                    <div class="time-block">
+                        <span id="days">61</span>
+                        <label>Hari</label>
+                    </div>
+                    <div class="time-block">
+                        <span id="hours">00</span>
+                        <label>Jam</label>
+                    </div>
+                    <div class="time-block">
+                        <span id="minutes">00</span>
+                        <label>Menit</label>
+                    </div>
+                    <div class="time-block">
+                        <span id="seconds">00</span>
+                        <label>Detik</label>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            
+            <!-- PROFILE CARDS -->
+            <section class="section-card participants-section">
+                <h2>I. Profil Peserta & Berat Awal</h2>
+                <div class="participants-grid">
+                    <!-- Participant 1: Lu -->
+                    <div class="participant-card user-1">
+                        <div class="card-glow"></div>
+                        <div class="avatar-ring">
+                            <span class="avatar-emoji">⚡</span>
+                        </div>
+                        <h3>Peserta 1 (Lu)</h3>
+                        <div class="weight-display">
+                            <span class="weight-val">88.0</span>
+                            <span class="weight-unit">kg</span>
+                        </div>
+                        <div class="role-badge shadow-blue">Pihak Pertama</div>
+                    </div>
+
+                    <!-- Participant 2: Temen -->
+                    <div class="participant-card user-2">
+                        <div class="card-glow"></div>
+                        <div class="avatar-ring">
+                            <span class="avatar-emoji">🌟</span>
+                        </div>
+                        <h3>Peserta 2 (Temen)</h3>
+                        <div class="weight-display">
+                            <span class="weight-val">67.1</span>
+                            <span class="weight-unit">kg</span>
+                        </div>
+                        <div class="role-badge shadow-pink">Pihak Kedua</div>
+                    </div>
+                </div>
+                
+                <div class="timeline-info">
+                    <div class="timeline-item">
+                        <span class="timeline-date">26 Mei 2026</span>
+                        <span class="timeline-label">Mulai Tantangan</span>
+                    </div>
+                    <div class="timeline-progress-bar">
+                        <div class="progress-fill" id="timeline-progress"></div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-date">26 Juli 2026</span>
+                        <span class="timeline-label">Timbangan Akhir</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WINNER DETERMINATION -->
+            <section class="section-card rule-card">
+                <h2>II. Penentuan Pemenang (Sistem %)</h2>
+                <p>Pemenang ditentukan dari <strong>persentase (%) penurunan berat badan terbesar</strong> dari berat awal masing-masing, menggunakan rumus resmi berikut:</p>
+                
+                <div class="formula-box">
+                    <div class="math-expr">
+                        <span>% Penurunan</span> = <div class="fraction">
+                            <span class="numerator">Berat Awal - Berat Akhir</span>
+                            <span class="denominator">Berat Awal</span>
+                        </div> &times; 100
+                    </div>
+                </div>
+
+                <!-- Live Simulator -->
+                <div class="simulator-box">
+                    <h3>📊 Kalkulator Simulasi Penurunan</h3>
+                    <p class="simulator-desc">Masukkan perkiraan berat badan akhir untuk mensimulasikan hasil.</p>
+                    
+                    <div class="simulator-grid">
+                        <div class="input-group">
+                            <label>Berat Akhir Lu (kg)</label>
+                            <input type="number" step="0.1" id="sim-lu" placeholder="Contoh: 82.5">
+                            <div class="result-badge" id="sim-lu-res">0.00% turun</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Berat Akhir Temen (kg)</label>
+                            <input type="number" step="0.1" id="sim-temen" placeholder="Contoh: 63.2">
+                            <div class="result-badge" id="sim-temen-res">0.00% turun</div>
+                        </div>
+                    </div>
+                    
+                    <div id="sim-winner" class="winner-alert">
+                        Masukkan berat badan di atas untuk melihat prediksi pemenang!
+                    </div>
+                </div>
+            </section>
+
+            <!-- WEIGH-IN RULES -->
+            <section class="section-card rules-list-card">
+                <h2>III. Aturan Timbangan (Weigh-in Rules)</h2>
+                <div class="rules-grid">
+                    <div class="rule-item">
+                        <div class="rule-icon">⏰</div>
+                        <div class="rule-text">
+                            <h4>Waktu Timbangan</h4>
+                            <p>Timbangan Awal dilakukan <strong>26 Mei 2026</strong>. Timbangan Akhir dilakukan pagi hari pada <strong>26 Juli 2026</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-icon">💧</div>
+                        <div class="rule-text">
+                            <h4>Kondisi Tubuh</h4>
+                            <p>Dilakukan pagi hari setelah bangun tidur, setelah buang air (BAB/BAK), dan <strong>SEBELUM</strong> makan/minum apa pun.</p>
+                        </div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-icon">🩳</div>
+                        <div class="rule-text">
+                            <h4>Pakaian</h4>
+                            <p>Menggunakan pakaian seminimal mungkin (misal: kaos & celana pendek) agar timbangan lebih akurat.</p>
+                        </div>
+                    </div>
+                    <div class="rule-item">
+                        <div class="rule-icon">📸</div>
+                        <div class="rule-text">
+                            <h4>Validasi</h4>
+                            <p>Angka pada timbangan digital **wajib difoto atau divideo** dengan jelas sebagai bukti otentik yang tidak bisa diganggu gugat.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="rule-footnote">
+                    💡 <strong>Metode Bebas:</strong> Selama proses 2 bulan, masing-masing peserta bebas menggunakan metode diet dan olahraga apa pun (Defisit kalori, intermittent fasting, gym, cardio, dll).
+                </div>
+            </section>
+
+            <!-- CONSEQUENCES -->
+            <section class="section-card bet-card">
+                <div class="fire-bg"></div>
+                <div class="bet-tag">🍖 HUKUMAN & TARUHAN</div>
+                <h2>Traktiran Gyukaku AYCE!</h2>
+                <p class="bet-desc">Yang KALAH wajib mentraktir pihak yang MENANG makan <strong>Gyukaku</strong> (Paket All You Can Eat minimal paket standar).</p>
+                <div class="deadline-badge">
+                    ⏳ Batas traktir: Maksimal <strong>Minggu, 2 Agustus 2026</strong> (1 minggu setelah timbangan akhir)
+                </div>
+            </section>
+
+            <!-- SIGNATURE SECTION -->
+            <section class="section-card sign-section">
+                <h2>IV. Persetujuan Perjanjian</h2>
+                <p class="sign-sub">Tantangan resmi berjalan setelah kedua belah pihak menandatangani kontrak digital ini.</p>
+                
+                <div class="signatures-wrapper">
+                    <!-- Lu's Signature -->
+                    <div class="sig-box signed" id="sig-lu-box">
+                        <div class="sig-header">
+                            <span class="sig-title">Lu (Pihak I)</span>
+                            <span class="sig-status badge-success">✓ Telah Menyetujui</span>
+                        </div>
+                        <div class="sig-content">
+                            <!-- Pre-signed style signature image/text -->
+                            <div class="signature-display">
+                                <span class="handwritten-sig">Lu (Signed)</span>
+                            </div>
+                            <span class="sig-date" id="sig-lu-date">26 Mei 2026, 08:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Temen's Signature -->
+                    <div class="sig-box" id="sig-temen-box">
+                        <div class="sig-header">
+                            <span class="sig-title">Temen (Pihak II)</span>
+                            <span class="sig-status badge-waiting" id="sig-temen-status">⏳ Menunggu Persetujuan</span>
+                        </div>
+                        <div class="sig-content" id="sig-temen-content">
+                            <button class="btn btn-primary" id="btn-open-sign">
+                                <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
+                            </button>
+                            <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statement Agreement -->
+                <div class="statement-banner">
+                    ⚠️ <em>"Dengan menyetujui, kedua belah pihak dinyatakan setuju dan tidak boleh ngambek atau cari alasan di akhir tantangan."</em>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="footer">
+            <p>Weight Loss Challenge © 2026</p>
+            <p class="author">Dibuat dengan 🔥 untuk persahabatan sehat</p>
+            <!-- Escape/Reset Button -->
+            <button class="btn-reset" id="btn-reset-agreement" title="Reset Persetujuan">
+                ⚙️ Reset Persetujuan Kontrak
+            </button>
+        </footer>
+
+    </div>
+
+    <!-- SIGNATURE MODAL -->
+    <div class="modal" id="sign-modal">
+        <div class="modal-overlay" id="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tanda Tangan Pihak II</h3>
+                <button class="close-btn" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-tip">Gunakan jari atau mouse untuk menggambar tanda tangan Anda di area abu-abu di bawah.</p>
+                
+                <div class="canvas-container">
+                    <canvas id="signature-canvas" width="400" height="200"></canvas>
+                </div>
+
+                <div class="canvas-actions">
+                    <button class="btn btn-secondary" id="btn-clear-canvas">Hapus Coretan</button>
+                    <button class="btn btn-success" id="btn-save-signature">Konfirmasi & Setuju ✓</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONGRATULATIONS BANNER overlay -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="success-content">
+            <div class="success-icon">🔒</div>
+            <h2>KONTRAK RESMI AKTIF!</h2>
+            <p>Persetujuan kedua belah pihak telah dikunci. Mulai perjalanan hidup lebih sehat!</p>
+            <div class="stamp">OFFICIAL AGREEMENT</div>
+            <button class="btn btn-primary" id="btn-close-success">Tutup & Lihat Kontrak</button>
+        </div>
+    </div>
+
+    <!-- Script file -->
+    <script src="app.js"></script>
+</body>
+</html>
