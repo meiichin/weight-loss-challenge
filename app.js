@@ -117,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (pctLu > pctTemen) {
                 const diff = pctLu - pctTemen;
-                simWinner.innerHTML = `🏆 <strong>Lu memimpin!</strong> Penurunan Lu lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Temen. (Traktiran gratis menanti!)`;
+                simWinner.innerHTML = `🏆 <strong>Pur memimpin!</strong> Penurunan Pur lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Stevhan. (Traktiran gratis menanti!)`;
             } else if (pctTemen > pctLu) {
                 const diff = pctTemen - pctLu;
-                simWinner.innerHTML = `🏆 <strong>Temen memimpin!</strong> Penurunan Temen lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Lu. (Traktiran gratis menanti!)`;
+                simWinner.innerHTML = `🏆 <strong>Stevhan memimpin!</strong> Penurunan Stevhan lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Pur. (Traktiran gratis menanti!)`;
             } else {
                 simWinner.innerHTML = `⚖️ <strong>Hasil Seri!</strong> Keduanya turun tepat <strong>${pctLu.toFixed(2)}%</strong>. Siap-siap patungan Gyukaku!`;
             }
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         sigTemenContent.innerHTML = `
             <div class="signature-display">
-                <img src="${imgUrl}" class="signature-img" alt="Tanda Tangan Temen">
+                <img src="${imgUrl}" class="signature-img" alt="Tanda Tangan Stevhan">
             </div>
             <span class="sig-date">${dateStr}</span>
         `;
