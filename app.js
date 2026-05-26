@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const START_WEIGHT_LU = 88.0;
     const START_WEIGHT_TEMEN = 67.1;
     const START_DATE = new Date('2026-05-26T00:00:00');
-    const END_DATE = new Date('2026-07-26T08:00:00');
+    const END_DATE = new Date('2026-07-27T08:00:00');
 
     // DOM Elements
     const daysEl = document.getElementById('days');
