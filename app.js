@@ -289,13 +289,56 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
+    function applyDefaultSignedState() {
+        sigTemenBox.classList.add('signed');
+        sigTemenStatus.className = 'sig-status badge-success';
+        sigTemenStatus.textContent = '✓ Telah Menyetujui';
+        
+        sigTemenContent.innerHTML = `
+            <div class="signature-display">
+                <span class="handwritten-sig" style="color: #ff3b70;">Stevhan (Signed)</span>
+            </div>
+            <span class="sig-date">26 Mei 2026, 15:00</span>
+        `;
+    }
+
+    function applyUnsignedState() {
+        sigTemenBox.classList.remove('signed');
+        sigTemenStatus.className = 'sig-status badge-waiting';
+        sigTemenStatus.textContent = '⏳ Menunggu Persetujuan';
+        
+        sigTemenContent.innerHTML = `
+            <button class="btn btn-primary" id="btn-open-sign">
+                <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
+            </button>
+            <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
+        `;
+        
+        // Re-attach event listener to the button
+        document.getElementById('btn-open-sign').addEventListener('click', () => {
+            signModal.classList.add('active');
+            setTimeout(resizeCanvas, 50);
+        });
+    }
+
     function checkExistingAgreement() {
         const isSigned = localStorage.getItem('weight_challenge_signed');
         const sigImg = localStorage.getItem('weight_challenge_sig_img');
         const sigDate = localStorage.getItem('weight_challenge_sig_date');
 
-        if (isSigned === 'true' && sigImg) {
-            applySignedState(sigImg, sigDate);
+        if (isSigned === 'true') {
+            if (sigImg) {
+                applySignedState(sigImg, sigDate);
+            } else {
+                applyDefaultSignedState();
+            }
+        } else if (isSigned === null) {
+            // First load: Default to signed
+            localStorage.setItem('weight_challenge_signed', 'true');
+            applyDefaultSignedState();
+        } else {
+            // isSigned === 'false': show unsigned state
+            applyUnsignedState();
         }
     }
 
@@ -304,10 +347,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset logic (Escape reset persetujuannya)
     btnResetAgreement.addEventListener('click', () => {
         if (confirm('Apakah Anda yakin ingin me-reset persetujuan tanda tangan kontrak ini? Pihak Kedua harus menandatangani ulang.')) {
-            localStorage.removeItem('weight_challenge_signed');
+            localStorage.setItem('weight_challenge_signed', 'false');
             localStorage.removeItem('weight_challenge_sig_img');
             localStorage.removeItem('weight_challenge_sig_date');
-            // Reload page to return to default state
             window.location.reload();
         }
     });
