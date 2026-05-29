@@ -12,6 +12,9 @@
     
     <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -154,6 +157,74 @@
                     
                     <div id="sim-winner" class="winner-alert">
                         Masukkan berat badan di atas untuk melihat prediksi pemenang!
+                    </div>
+                </div>
+            </section>
+
+            <!-- WEEKLY PROGRESS CHART & INPUT -->
+            <section class="section-card progress-chart-card">
+                <h2>📈 Grafik Progress & Input Mingguan</h2>
+                <p class="section-desc" style="text-align: center; margin-bottom: 1.5rem;">Pantau perkembangan penurunan berat badan real-time dari timbangan awal sampai sekarang.</p>
+                
+                <!-- Chart container -->
+                <div class="chart-container-wrapper" style="position: relative; height: 320px; width: 100%; margin-bottom: 1.5rem;">
+                    <canvas id="progress-chart"></canvas>
+                </div>
+
+                <!-- Input form toggle button -->
+                <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" id="btn-toggle-weigh-in">
+                        <span class="btn-icon">⚖️</span> Catat Berat Badan Baru
+                    </button>
+                </div>
+
+                <!-- Hidden Input form -->
+                <div class="weigh-in-form-wrapper" id="weigh-in-form-wrapper" style="display: none; margin-bottom: 1.5rem;">
+                    <div class="weigh-in-form" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem;">
+                        <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.1rem; color: #ffffff;">Input Timbangan Baru</h3>
+                        <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <label for="weigh-in-party" style="font-size: 0.8rem; color: var(--text-secondary);">Peserta</label>
+                                <select id="weigh-in-party" style="background: #111422; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; color: #ffffff; outline: none; font-family: inherit;">
+                                    <option value="pur">Pur</option>
+                                    <option value="stevhan">Stevhan</option>
+                                    <option value="dewa">Dewa</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <label for="weigh-in-weight" style="font-size: 0.8rem; color: var(--text-secondary);">Berat Baru (kg)</label>
+                                <input type="number" step="0.05" id="weigh-in-weight" placeholder="Contoh: 87.5" style="background: #111422; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; color: #ffffff; outline: none; font-family: inherit;">
+                            </div>
+                            <div class="form-group" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <label for="weigh-in-date" style="font-size: 0.8rem; color: var(--text-secondary);">Tanggal</label>
+                                <input type="date" id="weigh-in-date" style="background: #111422; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; color: #ffffff; outline: none; font-family: inherit;">
+                            </div>
+                        </div>
+                        <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                            <button class="btn btn-secondary" id="btn-cancel-weigh-in" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Batal</button>
+                            <button class="btn btn-success" id="btn-submit-weigh-in" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;">Simpan Data ✓</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Historical Table -->
+                <div class="history-table-wrapper" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 1.25rem; overflow: hidden;">
+                    <h3 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.1rem; color: #ffffff;">Riwayat Log Timbangan</h3>
+                    <div style="overflow-x: auto; width: 100%;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--text-secondary);">
+                                    <th style="padding: 0.75rem 0.5rem; font-weight: 600;">Tanggal</th>
+                                    <th style="padding: 0.75rem 0.5rem; font-weight: 600; color: #00d2ff;">Pur (kg)</th>
+                                    <th style="padding: 0.75rem 0.5rem; font-weight: 600; color: #ff3b70;">Stevhan (kg)</th>
+                                    <th style="padding: 0.75rem 0.5rem; font-weight: 600; color: #ffbd00;">Dewa (kg)</th>
+                                    <th style="padding: 0.75rem 0.5rem; font-weight: 600; text-align: center;">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" style="color: #ffffff;">
+                                <!-- Dynamic rows loaded from Firebase -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>

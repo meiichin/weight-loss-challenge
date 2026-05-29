@@ -465,6 +465,287 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- CHART & HISTORICAL TABLE LOGIC ---
+    let progressChart = null;
+    let localLogs = [];
+
+    function renderChart(logs) {
+        const ctx = document.getElementById('progress-chart').getContext('2d');
+        const sortedLogs = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const dates = ['2026-05-29'];
+        sortedLogs.forEach(log => {
+            if (!dates.includes(log.date) && log.date >= '2026-05-29') {
+                dates.push(log.date);
+            }
+        });
+        dates.sort((a, b) => new Date(a) - new Date(b));
+
+        let currentWeightPur = START_WEIGHT_LU;
+        let currentWeightStevhan = START_WEIGHT_TEMEN;
+        let currentWeightDewa = START_WEIGHT_DEWA;
+
+        const dataPur = [0];
+        const dataStevhan = [0];
+        const dataDewa = [0];
+
+        for (let i = 1; i < dates.length; i++) {
+            const currentDate = dates[i];
+            const logsPur = sortedLogs.filter(l => l.date === currentDate && l.party === 'pur');
+            const logsStevhan = sortedLogs.filter(l => l.date === currentDate && l.party === 'stevhan');
+            const logsDewa = sortedLogs.filter(l => l.date === currentDate && l.party === 'dewa');
+
+            if (logsPur.length > 0) currentWeightPur = logsPur[logsPur.length - 1].weight;
+            if (logsStevhan.length > 0) currentWeightStevhan = logsStevhan[logsStevhan.length - 1].weight;
+            if (logsDewa.length > 0) currentWeightDewa = logsDewa[logsDewa.length - 1].weight;
+
+            const pctPur = ((START_WEIGHT_LU - currentWeightPur) / START_WEIGHT_LU) * 100;
+            const pctStevhan = ((START_WEIGHT_TEMEN - currentWeightStevhan) / START_WEIGHT_TEMEN) * 100;
+            const pctDewa = ((START_WEIGHT_DEWA - currentWeightDewa) / START_WEIGHT_DEWA) * 100;
+
+            dataPur.push(parseFloat(pctPur.toFixed(2)));
+            dataStevhan.push(parseFloat(pctStevhan.toFixed(2)));
+            dataDewa.push(parseFloat(pctDewa.toFixed(2)));
+        }
+
+        const formatChartDate = (dateStr) => {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        };
+        const labels = dates.map(formatChartDate);
+
+        if (progressChart) {
+            progressChart.destroy();
+        }
+
+        progressChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Pur (% Turun)',
+                        data: dataPur,
+                        borderColor: '#00d2ff',
+                        backgroundColor: 'rgba(0, 210, 255, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#00d2ff',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 4,
+                        tension: 0.25
+                    },
+                    {
+                        label: 'Stevhan (% Turun)',
+                        data: dataStevhan,
+                        borderColor: '#ff3b70',
+                        backgroundColor: 'rgba(255, 59, 112, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ff3b70',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 4,
+                        tension: 0.25
+                    },
+                    {
+                        label: 'Dewa (% Turun)',
+                        data: dataDewa,
+                        borderColor: '#ffbd00',
+                        backgroundColor: 'rgba(255, 189, 0, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffbd00',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 4,
+                        tension: 0.25
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#e5e7eb', font: { family: 'Plus Jakarta Sans', size: 11 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Plus Jakarta Sans' } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: { family: 'Plus Jakarta Sans' },
+                            callback: function(value) { return value + '%'; }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Total Penurunan (%)',
+                            color: '#9ca3af',
+                            font: { family: 'Plus Jakarta Sans', size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTable(logs) {
+        const body = document.getElementById('history-table-body');
+        body.innerHTML = '';
+
+        const grouped = {};
+        grouped['2026-05-29'] = {
+            date: '2026-05-29',
+            pur: { weight: START_WEIGHT_LU, id: 'start' },
+            stevhan: { weight: START_WEIGHT_TEMEN, id: 'start' },
+            dewa: { weight: START_WEIGHT_DEWA, id: 'start' },
+            isStart: true
+        };
+
+        logs.forEach(log => {
+            if (!grouped[log.date]) {
+                grouped[log.date] = { date: log.date, pur: null, stevhan: null, dewa: null };
+            }
+            grouped[log.date][log.party] = { weight: log.weight, id: log.id };
+        });
+
+        const rows = Object.values(grouped).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        rows.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid rgba(255, 255, 255, 0.05)';
+
+            const formattedDate = new Date(row.date).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+
+            const getColHtml = (partKey) => {
+                const cell = row[partKey];
+                if (!cell) return `<td style="padding: 0.75rem 0.5rem; color: var(--text-secondary);">-</td>`;
+                
+                let deleteBtn = '';
+                if (!row.isStart) {
+                    deleteBtn = `<button class="btn-delete-log" data-id="${cell.id}" title="Hapus log ini" style="font-size:0.75rem; padding:0; margin-left:6px; background:none; border:none; cursor:pointer;">❌</button>`;
+                }
+                
+                let color = '#00d2ff';
+                if (partKey === 'stevhan') color = '#ff3b70';
+                if (partKey === 'dewa') color = '#ffbd00';
+
+                return `
+                    <td style="padding: 0.75rem 0.5rem; color: ${color}; font-weight: 700; white-space: nowrap;">
+                        ${cell.weight.toFixed(1)} kg ${deleteBtn}
+                    </td>
+                `;
+            };
+
+            const purTd = getColHtml('pur');
+            const stevhanTd = getColHtml('stevhan');
+            const dewaTd = getColHtml('dewa');
+
+            const actionHtml = row.isStart 
+                ? `<span style="font-size:0.75rem; color:var(--text-secondary); font-style:italic;">Mulai</span>` 
+                : `<span style="font-size:0.75rem; color:var(--text-secondary);">Log</span>`;
+
+            tr.innerHTML = `
+                <td style="padding: 0.75rem 0.5rem; font-weight: 500;">${formattedDate}</td>
+                ${purTd}
+                ${stevhanTd}
+                ${dewaTd}
+                <td style="padding: 0.75rem 0.5rem; text-align: center;">${actionHtml}</td>
+            `;
+
+            body.appendChild(tr);
+        });
+
+        body.querySelectorAll('.btn-delete-log').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const logId = btn.getAttribute('data-id');
+                if (confirm('Hapus log timbangan ini?')) {
+                    const updatedLogs = localLogs.filter(log => log.id !== logId);
+                    try {
+                        await setDoc(agreementDocRef, { weighIns: updatedLogs }, { merge: true });
+                    } catch (error) {
+                        console.error("Error deleting log: ", error);
+                        alert("Gagal menghapus log timbangan.");
+                    }
+                }
+            });
+        });
+    }
+
+    // --- FORM WEIGH IN EVENT LISTENERS ---
+    const btnToggleWeighIn = document.getElementById('btn-toggle-weigh-in');
+    const weighInFormWrapper = document.getElementById('weigh-in-form-wrapper');
+    const btnCancelWeighIn = document.getElementById('btn-cancel-weigh-in');
+    const btnSubmitWeighIn = document.getElementById('btn-submit-weigh-in');
+
+    btnToggleWeighIn.addEventListener('click', () => {
+        const isHidden = weighInFormWrapper.style.display === 'none';
+        weighInFormWrapper.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('weigh-in-date').value = `${year}-${month}-${day}`;
+        }
+    });
+
+    btnCancelWeighIn.addEventListener('click', () => {
+        weighInFormWrapper.style.display = 'none';
+    });
+
+    btnSubmitWeighIn.addEventListener('click', async () => {
+        const party = document.getElementById('weigh-in-party').value;
+        const weightVal = parseFloat(document.getElementById('weigh-in-weight').value);
+        const dateVal = document.getElementById('weigh-in-date').value;
+
+        if (!weightVal || weightVal <= 0) {
+            alert('Masukkan angka berat badan yang valid!');
+            return;
+        }
+        if (!dateVal) {
+            alert('Pilih tanggal!');
+            return;
+        }
+
+        btnSubmitWeighIn.disabled = true;
+        btnSubmitWeighIn.textContent = 'Menyimpan...';
+
+        const newLog = {
+            id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+            party: party,
+            weight: weightVal,
+            date: dateVal
+        };
+
+        const updatedLogs = [...localLogs, newLog];
+
+        try {
+            await setDoc(agreementDocRef, { weighIns: updatedLogs }, { merge: true });
+            document.getElementById('weigh-in-weight').value = '';
+            weighInFormWrapper.style.display = 'none';
+        } catch (error) {
+            console.error("Error saving log: ", error);
+            alert("Gagal menyimpan data timbangan.");
+        } finally {
+            btnSubmitWeighIn.disabled = false;
+            btnSubmitWeighIn.textContent = 'Simpan Data ✓';
+        }
+    });
+
     let overlayShownThisSession = sessionStorage.getItem('weight_challenge_overlay_shown') === 'true';
 
     // Firestore Sync Real-Time listener
@@ -493,6 +774,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyUnsignedState('dewa');
             }
 
+            // Load and render weekly progress logs
+            localLogs = data.weighIns || [];
+            renderChart(localLogs);
+            renderTable(localLogs);
+
             // Confetti Trigger if all 3 are signed
             const allSigned = data.pur?.signed && data.stevhan?.signed && data.dewa?.signed;
             if (allSigned && !overlayShownThisSession) {
@@ -505,6 +791,8 @@ document.addEventListener('DOMContentLoaded', () => {
             applyUnsignedState('pur');
             applyUnsignedState('stevhan');
             applyUnsignedState('dewa');
+            renderChart([]);
+            renderTable([]);
         }
     }, (error) => {
         console.error("Firestore sync error: ", error);
@@ -519,7 +807,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 await setDoc(agreementDocRef, {
                     pur: { signed: false, img: null, date: null },
                     stevhan: { signed: false, img: null, date: null },
-                    dewa: { signed: false, img: null, date: null }
+                    dewa: { signed: false, img: null, date: null },
+                    weighIns: []
                 });
                 sessionStorage.removeItem('weight_challenge_overlay_shown');
                 window.location.reload();
