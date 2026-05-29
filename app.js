@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Constant weight data
     const START_WEIGHT_LU = 88.0;
     const START_WEIGHT_TEMEN = 67.1;
+    const START_WEIGHT_DEWA = 84.75;
     const START_DATE = new Date('2026-05-26T00:00:00');
     const END_DATE = new Date('2026-07-27T08:00:00');
 
@@ -16,8 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Simulator Elements
     const simLuInput = document.getElementById('sim-lu');
     const simTemenInput = document.getElementById('sim-temen');
+    const simDewaInput = document.getElementById('sim-dewa');
     const simLuRes = document.getElementById('sim-lu-res');
     const simTemenRes = document.getElementById('sim-temen-res');
+    const simDewaRes = document.getElementById('sim-dewa-res');
     const simWinner = document.getElementById('sim-winner');
 
     // Modal Elements
@@ -88,9 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function runSimulation() {
         const valLu = parseFloat(simLuInput.value);
         const valTemen = parseFloat(simTemenInput.value);
+        const valDewa = parseFloat(simDewaInput.value);
 
         const pctLu = calculateLossPercentage(START_WEIGHT_LU, valLu);
         const pctTemen = calculateLossPercentage(START_WEIGHT_TEMEN, valTemen);
+        const pctDewa = calculateLossPercentage(START_WEIGHT_DEWA, valDewa);
 
         // Update displays
         if (valLu > 0) {
@@ -111,27 +116,71 @@ document.addEventListener('DOMContentLoaded', () => {
             simTemenRes.style.color = 'var(--text-secondary)';
         }
 
+        if (valDewa > 0) {
+            simDewaRes.textContent = `${pctDewa.toFixed(2)}% turun`;
+            simDewaRes.style.color = '#ffbd00';
+            simDewaRes.style.fontWeight = '700';
+        } else {
+            simDewaRes.textContent = '0.00% turun';
+            simDewaRes.style.color = 'var(--text-secondary)';
+        }
+
+        // Leaderboard standings
+        let standings = [];
+        if (valLu > 0) standings.push({ name: 'Pur', pct: pctLu, color: '#00d2ff' });
+        if (valTemen > 0) standings.push({ name: 'Stevhan', pct: pctTemen, color: '#ff3b70' });
+        if (valDewa > 0) standings.push({ name: 'Dewa', pct: pctDewa, color: '#ffbd00', noBet: true });
+
+        standings.sort((a, b) => b.pct - a.pct);
+
+        let standingsHtml = '';
+        if (standings.length > 0) {
+            standingsHtml = `
+            <div style="margin-top: 12px; text-align: left; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
+                <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase;">📊 KLASEMEN PENURUNAN</div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+            `;
+            standings.forEach((s, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                standingsHtml += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                        <span>${medal} <span style="color: ${s.color}; font-weight: 700;">${s.name}</span> ${s.noBet ? '<span style="font-size: 0.7rem; color: var(--text-secondary);"> (Hanya Challenge)</span>' : ''}</span>
+                        <span style="font-family: var(--font-heading); font-weight: 700; color: #ffffff;">${s.pct.toFixed(2)}%</span>
+                    </div>
+                `;
+            });
+            standingsHtml += '</div></div>';
+        }
+
         // Determine winner
+        let winText = '';
         if (valLu > 0 && valTemen > 0) {
             simWinner.classList.add('success-alert');
             
             if (pctLu > pctTemen) {
                 const diff = pctLu - pctTemen;
-                simWinner.innerHTML = `🏆 <strong>Pur memimpin!</strong> Penurunan Pur lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Stevhan. (Traktiran gratis menanti!)`;
+                winText = `🏆 <strong>Pur memimpin taruhan!</strong> Penurunan Pur lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Stevhan. (Traktiran gratis menanti!)`;
             } else if (pctTemen > pctLu) {
                 const diff = pctTemen - pctLu;
-                simWinner.innerHTML = `🏆 <strong>Stevhan memimpin!</strong> Penurunan Stevhan lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Pur. (Traktiran gratis menanti!)`;
+                winText = `🏆 <strong>Stevhan memimpin taruhan!</strong> Penurunan Stevhan lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Pur. (Traktiran gratis menanti!)`;
             } else {
-                simWinner.innerHTML = `⚖️ <strong>Hasil Seri!</strong> Keduanya turun tepat <strong>${pctLu.toFixed(2)}%</strong>. Siap-siap patungan Gyukaku!`;
+                winText = `⚖️ <strong>Hasil Seri!</strong> Keduanya turun tepat <strong>${pctLu.toFixed(2)}%</strong>. Siap-siap patungan Gyukaku!`;
             }
         } else {
             simWinner.classList.remove('success-alert');
-            simWinner.innerHTML = 'Masukkan berat badan di atas untuk melihat prediksi pemenang!';
+            winText = 'Masukkan berat badan Pur & Stevhan untuk melihat prediksi taruhan!';
+        }
+
+        if (standings.length > 0) {
+            simWinner.innerHTML = `<div>${winText}</div>${standingsHtml}`;
+        } else {
+            simWinner.innerHTML = winText;
         }
     }
 
     simLuInput.addEventListener('input', runSimulation);
     simTemenInput.addEventListener('input', runSimulation);
+    simDewaInput.addEventListener('input', runSimulation);
 
     // ----------------------------------------------------
     // 3. CANVAS SIGNATURE DRAWING

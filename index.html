@@ -84,6 +84,20 @@
                         </div>
                         <div class="role-badge shadow-pink">Pihak Kedua</div>
                     </div>
+
+                    <!-- Participant 3: Dewa -->
+                    <div class="participant-card user-3">
+                        <div class="card-glow"></div>
+                        <div class="avatar-ring">
+                            <span class="avatar-emoji">👑</span>
+                        </div>
+                        <h3>Peserta 3 (Dewa)</h3>
+                        <div class="weight-display">
+                            <span class="weight-val">84.75</span>
+                            <span class="weight-unit">kg</span>
+                        </div>
+                        <div class="role-badge shadow-gold" style="background: rgba(255, 189, 0, 0.15); color: var(--color-gold); border: 1px solid rgba(255, 189, 0, 0.3);">Hanya Challenge</div>
+                    </div>
                 </div>
                 
                 <div class="timeline-info">
@@ -130,6 +144,11 @@
                             <label>Berat Akhir Stevhan (kg)</label>
                             <input type="number" step="0.1" id="sim-temen" placeholder="Contoh: 63.2">
                             <div class="result-badge" id="sim-temen-res">0.00% turun</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Berat Akhir Dewa (kg)</label>
+                            <input type="number" step="0.1" id="sim-dewa" placeholder="Contoh: 79.5">
+                            <div class="result-badge" id="sim-dewa-res">0.00% turun</div>
                         </div>
                     </div>
                     
@@ -183,6 +202,7 @@
                 <div class="bet-tag">🍖 HUKUMAN & TARUHAN</div>
                 <h2>Traktiran Gyukaku AYCE!</h2>
                 <p class="bet-desc">Yang KALAH wajib mentraktir pihak yang MENANG makan <strong>Gyukaku</strong> (Paket All You Can Eat minimal paket standar).</p>
+                <p class="bet-desc" style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.5rem; margin-bottom: 0;">*Catatan: Dewa hanya ikut serta dalam tantangan potong berat badan dan tidak terlibat dalam taruhan makan Gyukaku ini.</p>
             </section>
 
             <!-- SIGNATURE SECTION -->
@@ -217,6 +237,21 @@
                                 <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
                             </button>
                             <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
+                        </div>
+                    </div>
+
+                    <!-- Dewa's Signature -->
+                    <div class="sig-box signed" id="sig-dewa-box">
+                        <div class="sig-header">
+                            <span class="sig-title">Dewa (Pihak III)</span>
+                            <span class="sig-status badge-success">✓ Telah Menyetujui</span>
+                        </div>
+                        <div class="sig-content">
+                            <!-- Pre-signed style signature image/text -->
+                            <div class="signature-display">
+                                <span class="handwritten-sig" style="color: #ffbd00;">Dewa (Signed)</span>
+                            </div>
+                            <span class="sig-date" id="sig-dewa-date">26 Mei 2026, 17:00</span>
                         </div>
                     </div>
                 </div>
