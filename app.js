@@ -159,26 +159,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Determine taruhan winner among all 3 participants
         let winText = '';
+        let paymentHtml = '';
         if (valLu > 0 || valTemen > 0 || valDewa > 0) {
             simWinner.classList.add('success-alert');
 
             // Sort only parties who have entered values
             const betParties = [
-                valLu > 0 ? { name: 'Pur', pct: pctLu } : null,
-                valTemen > 0 ? { name: 'Stevhan', pct: pctTemen } : null,
-                valDewa > 0 ? { name: 'Dewa', pct: pctDewa } : null,
+                valLu > 0 ? { name: 'Pur', pct: pctLu, color: '#00d2ff' } : null,
+                valTemen > 0 ? { name: 'Stevhan', pct: pctTemen, color: '#ff3b70' } : null,
+                valDewa > 0 ? { name: 'Dewa', pct: pctDewa, color: '#ffbd00' } : null,
             ].filter(Boolean);
             betParties.sort((a, b) => b.pct - a.pct);
 
+            const payRules = ['FREE 🎉', '10% tagihan 😅', '90% tagihan 😭'];
+            const medals = ['🥇', '🥈', '🥉'];
+
             if (betParties.length >= 2) {
                 const top = betParties[0];
-                const second = betParties[1];
-                if (top.pct > second.pct) {
-                    const diff = top.pct - second.pct;
-                    winText = `🏆 <strong>${top.name} memimpin!</strong> Selisih <strong>${diff.toFixed(2)}%</strong> dari ${betParties.slice(1).map(p => p.name).join(' & ')}. (Traktiran gratis menanti!)`;
+                if (betParties.length >= 2 && top.pct > betParties[1].pct) {
+                    winText = `🏆 <strong style="color:${top.color}">${top.name}</strong> makan <strong>GRATIS</strong>! Yang lain siap-siap patungan Gyukaku!`;
                 } else {
-                    winText = `⚖️ <strong>Hasil Seri!</strong> Keduanya turun tepat <strong>${top.pct.toFixed(2)}%</strong>. Siap-siap patungan Gyukaku!`;
+                    winText = `⚖️ <strong>Ada yang seri!</strong> Perlu timbangan asli untuk menentukan urutan.`;
                 }
+
+                // Build payment breakdown table
+                paymentHtml = `
+                <div style="margin-top: 14px; text-align: left; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow: hidden;">
+                    <div style="padding: 10px 14px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid rgba(255,255,255,0.05);">💸 SIMULASI PEMBAYARAN</div>
+                    ${betParties.map((p, idx) => {
+                        const rule = payRules[idx] || '90% tagihan 😭';
+                        const medal = medals[idx] || '🥉';
+                        const isWinner = idx === 0;
+                        const bgColor = isWinner ? 'rgba(255,189,0,0.07)' : 'transparent';
+                        return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: ${bgColor}; border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <span style="font-size:0.85rem;">${medal} <span style="color:${p.color}; font-weight:700;">${p.name}</span> <span style="font-size:0.7rem; color: var(--text-secondary);">(${p.pct.toFixed(2)}% turun)</span></span>
+                            <span style="font-family: var(--font-heading); font-weight: 700; font-size: 0.9rem; color: ${isWinner ? '#ffbd00' : '#ffffff'};">${rule}</span>
+                        </div>`;
+                    }).join('')}
+                </div>`;
             } else {
                 winText = `📊 Masukkan berat lebih banyak peserta untuk melihat perbandingan!`;
             }
@@ -187,11 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             winText = 'Masukkan berat badan akhir untuk melihat prediksi!';
         }
 
-        if (standings.length > 0) {
-            simWinner.innerHTML = `<div>${winText}</div>${standingsHtml}`;
-        } else {
-            simWinner.innerHTML = winText;
-        }
+        simWinner.innerHTML = `<div>${winText}</div>${standingsHtml}${paymentHtml}`;
     }
 
     simLuInput.addEventListener('input', runSimulation);
