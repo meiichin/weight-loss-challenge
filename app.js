@@ -800,6 +800,126 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // --- DAILY BANNER MOTIVATION BANNER LOGIC ---
+    const quotes = [
+        "Ingat Pur, donat hari ini adalah penyesalan di meja Gyukaku nanti! 🍩",
+        "Stevhan, minum air putih 2 gelas sekarang bisa membantu metabolisme lemak! 💧",
+        "Dewa diam-diam defisit kalori, jangan sampai kalian terkejut di akhir tantangan! 🤫",
+        "Tip Hari Ini: Kurangi gorengan, perbanyak protein. Biar grafik penurunan Anda melesat ke atas! 🚀",
+        "Gyukaku Paket Standar sudah menanti Juara 1. Juara 3 siap-siap gesek kartu dengan tabah! 🍖",
+        "Katanya mau sehat, kok masih lirik martabak manis semalam? Ingat kontrak digital ini! ⚠️",
+        "Tip Hari Ini: Cobalah 'Intermittent Fasting'. Batasi waktu makanmu agar kalori harian tetap aman. ⏱️",
+        "Defisit kalori itu sederhana: bakar lebih banyak dari yang dimakan. Jangan kebalik! ⚖️",
+        "Ingat, timbangan digital tidak pernah berbohong. Kecuali kalau Anda nimbang sambil pegangan tembok! 🤣",
+        "Tip Hari Ini: Kurangi minuman manis instan. Satu gelas boba setara kalori makan siang lengkap! 🧋",
+        "Stevhan, olahraga 30 menit sehari lebih baik daripada memikirkan menu curang (cheat meal)! 🏃‍♂️",
+        "Pur, konsisten adalah kunci. Satu hari gagal bukan berarti tantangan selesai. Mulai lagi hari ini! 💪",
+        "Dewa, ayo panaskan klasemen! Tunjukkan penurunan berat badanmu hari ini! 📊",
+        "Tip Hari Ini: Perbanyak serat dari sayuran agar kenyang lebih lama tanpa kalori berlebih. 🥦",
+        "Jangan ngambek di akhir tantangan ya, tanda tangan kalian bertiga sudah tersimpan abadi di database Firestore! 🔒",
+        "Setiap langkah kaki hari ini mendekatkan Anda ke gelar juara makan gratis di Gyukaku! 🥇",
+        "Tip Hari Ini: Makanlah secara perlahan. Butuh waktu 20 menit bagi otak untuk menerima sinyal kenyang. 🧠",
+        "Jangan jadikan olahraga sebagai hukuman karena makan banyak, tapi jadikan perayaan atas apa yang tubuhmu bisa lakukan! ✨",
+        "Pur, Stevhan, Dewa... mata Vercel memantau grafik penurunan kalian setiap detik! 👀",
+        "Tip Hari Ini: Pastikan tidur cukup 7-8 jam. Kurang tidur bisa memicu hormon lapar (ghrelin) meningkat. 😴",
+        "Timbangan akhir 29 Juli sudah menunggu. Jangan sampai menyesal di hari kerja! 📅",
+        "Tip Hari Ini: Siapkan cemilan sehat seperti buah atau kacang almond sebelum rasa lapar melanda. 🍎",
+        "Ingat, pemenang ditentukan dari PERSENTASE penurunan, bukan total kilogram. Semua orang punya peluang sama! ⚖️",
+        "Lebih baik lelah kardio daripada lelah dompet karena harus bayar 90% bill Gyukaku! 💸",
+        "Semangat bertarung sehat! Jaga sportivitas dan mari capai berat badan ideal bersama-sama! 🔥",
+        "Tip Hari Ini: Minum air putih 500ml sebelum makan besar untuk membantu mengontrol porsi makan. 💧",
+        "Pikirkan Gyukaku Paket Standar bergulir di lidah Anda, Pur. Letakkan garpu mie instan itu sekarang! 🍜",
+        "Stevhan, jika lapar malam hari, cobalah tidur. Itu hanya keinginan mengunyah, bukan kebutuhan tubuh. 🛌",
+        "Dewa, timbanganmu hari ini adalah cerminan dari disiplinmu kemarin! 🎯",
+        "Tip Hari Ini: Kurangi penggunaan garam berlebih, karena garam bisa mengikat air dalam tubuh (water retention). 🧂",
+        "Apakah Anda tahu? Berjalan kaki 10.000 langkah membakar sekitar 300-400 kalori. Yuk jalan kaki! 🚶‍♂️",
+        "Pur, jika Anda tergoda makan pizza, ingatlah bayangan bill Gyukaku sebesar 900 ribu rupiah! 🍕",
+        "Stevhan, jangan malas melakukan latihan beban. Massa otot yang tinggi membantu membakar kalori saat diam. 🏋️‍♂️",
+        "Dewa sudah mulai jogging tiap pagi, kalian berdua (Pur & Stevhan) jangan mau ketinggalan! 🏃‍♂️",
+        "Tip Hari Ini: Masak makanan sendiri di rumah membantu Anda mengontrol kalori dan minyak dengan presisi. 🍳",
+        "Makan pelan-pelan, nikmati setiap gigitan. Perut kenyang, hati pun senang tanpa harus nambah porsi. 🍽️",
+        "Ingat, turun berat badan adalah maraton, bukan sprint. Yang konsisten yang akan makan gratis! 🏆",
+        "Tip Hari Ini: Hindari ngemil sambil nonton TV atau main HP, karena Anda tidak akan sadar berapa banyak yang dimakan. 📱",
+        "Pur, kurangi porsi karbohidrat dan ganti dengan porsi protein lebih banyak. Kenyangnya lebih awet! 🍗",
+        "Stevhan, defisit kalori tidak berarti kelaparan. Pilih makanan padat volume tapi rendah kalori (seperti semangka). 🍉",
+        "Dewa, apakah hari ini beratmu sudah turun? Klasemen real-time sedang bergoyang! 📈",
+        "Tip Hari Ini: Biasakan naik tangga daripada lift jika hanya naik 2-3 lantai. Lumayan bakar kalori ekstra! 🪜",
+        "Defisit kalori 500 kalori per hari secara konsisten bisa menurunkan sekitar 0.5 kg lemak per minggu. 📉",
+        "Pur, Stevhan, Dewa, siapa yang hari ini makannya paling bersih? Gyukaku menanti sang juara! 🥩",
+        "Tip Hari Ini: Buatlah jurnal makanan (food tracking) agar Anda sadar kalori apa saja yang masuk. 📓",
+        "Makan buah utuh jauh lebih mengenyangkan daripada minum jus buah yang ditambah gula. 🍊",
+        "Stevhan, jika berat badanmu naik sedikit hari ini, itu mungkin hanya air. Jangan patah semangat! 💪",
+        "Pur, hilangkan kebiasaan ngemil keripik saat kerja. Kalori kecilnya cepat menumpuk tanpa disadari. 🚫",
+        "Dewa, persentase penurunanmu terlihat menjanjikan. Pertahankan pola makan bersihnya! 👍",
+        "Tip Hari Ini: Hindari belanja bahan makanan ke supermarket saat perut sedang lapar. Anda akan tergoda membeli junk food. 🛒",
+        "Diet yang berhasil adalah diet yang bisa dinikmati dalam jangka panjang, bukan cuma 2 minggu menyiksa. 🧘‍♂️",
+        "Pur, bayangkan wajah Stevhan dan Dewa tertawa bahagia saat Anda membayar tagihan Gyukaku mereka. Ayo bakar lemak! 😈",
+        "Stevhan, satu gelas teh manis hangat mengandung sekitar 100 kalori. Lebih baik ganti teh tawar atau air putih! 🍵",
+        "Dewa, defisit kalori tanpa olahraga bisa membuat tubuh terasa lemas. Yuk, luangkan waktu bergerak! 🚴‍♂️",
+        "Tip Hari Ini: Gunakan piring atau mangkok yang lebih kecil untuk trik psikologi porsi makan sedikit. 🥣",
+        "Setiap tetes keringat saat kardio adalah investasi agar tidak tekor saat traktiran makan besar! 💦",
+        "Tip Hari Ini: Jangan lewatkan sarapan jika itu membuat Anda makan porsi gila-gilaan di siang hari. 🍳",
+        "Pur, tantangan ini tinggal beberapa minggu lagi. Jangan biarkan usaha kerasmu sia-sia karena satu 'cheat day' berlebihan! ⏳",
+        "Stevhan, jadwalkan olahraga bersama teman agar motivasi latihan tetap membara. 🤝",
+        "Dewa, klasemen hari ini membuktikan siapa yang paling niat dietnya. Tunjukkan taringmu! 🦁",
+        "Tip Hari Ini: Konsumsi yogurt tawar (Greek yogurt) sebagai cemilan sehat berprotein tinggi. 🥛",
+        "Air es tidak membakar lemak secara ajaib, tapi air dingin terbukti sedikit menaikkan metabolisme tubuh. 🧊",
+        "Pur, jika Stevhan mengajak nongkrong di kafe, pesanlah Americano atau kopi hitam tanpa gula. ☕",
+        "Stevhan, pastikan asupan lemak sehat tetap terpenuhi dari alpukat atau kuning telur. 🥑",
+        "Dewa, apakah target berat badanmu sudah dekat? Jangan kendor di pertengahan jalan! 🏁",
+        "Tip Hari Ini: Kurangi saus botolan atau mayones berlebih karena mereka tinggi kalori tersembunyi. 🥫",
+        "Jangan tergoda obat pelangsing instan. Kuncinya tetap defisit kalori dan olahraga konsisten! 💊",
+        "Pur, kurangi makan malam terlalu larut agar pencernaan bekerja optimal saat tidur. 🌙",
+        "Stevhan, berat badan ideal membuat tubuh terasa lebih ringan, aktif, dan percaya diri! ✨",
+        "Dewa, mari kita lihat grafik penurunanmu besok pagi. Apakah akan meluncur ke bawah? 📉",
+        "Tip Hari Ini: Kurangi konsumsi daging olahan seperti sosis atau kornet. Pilih daging segar utuh. 🥩",
+        "Bumbu dapur alami seperti cabai dan lada bisa membantu meningkatkan pembakaran kalori tubuh. 🌶️",
+        "Pur, ingat janji tanda tangan kontrak digital ini: dilarang ngambek atau cari alasan di akhir! 😉",
+        "Stevhan, fokus pada proses harian Anda. Hasil timbangan akhir akan mengikuti kedisiplinan Anda. 🎯",
+        "Dewa, jangan biarkan porsi nasi padang merusak kerja keras jogging pagi Anda! 🍛",
+        "Tip Hari Ini: Minum teh hijau tanpa gula. Teh hijau kaya antioksidan dan membantu membakar lemak. 🍵",
+        "Defisit kalori ekstrem (<1000 kalori) tidak sehat dan bisa merusak metabolisme tubuh. Turunkan secara bertahap! ⚠️",
+        "Pur, bayangkan kenikmatan daging Gyukaku gratis yang dibayari oleh peringkat 3! 🤤",
+        "Stevhan, luangkan waktu jalan kaki sore. Selain membakar kalori, ini juga meredakan stres harian. 🌳",
+        "Dewa, tantangan harian ini seru sekali karena datanya tersimpan langsung di cloud Firestore. Ayo update! ☁️",
+        "Tip Hari Ini: Makanlah buah apel sebagai cemilan sore. Apel tinggi serat dan air sehingga mengenyangkan. 🍎",
+        "Mencuci mobil atau membersihkan rumah sendiri juga termasuk aktivitas fisik pembakar kalori! 🧹",
+        "Pur, jika lapar menyerang sore hari, cobalah minum air hangat terlebih dahulu. Seringkali itu hanya dehidrasi. 🥛",
+        "Stevhan, kurangi makan roti putih dan beralihlah ke roti gandum utuh yang lebih padat serat. 🍞",
+        "Dewa, posisi klasemenmu sangat kompetitif. Terus jaga pola makan sehatnya! 💪",
+        "Tip Hari Ini: Ganti cemilan keripik dengan popcorn polos (popcorn tawar tanpa mentega/karamel). 🍿",
+        "Olahraga kardio terbaik adalah olahraga yang Anda sukai, entah itu berenang, bersepeda, badminton, atau futsal. 🏊‍♂️",
+        "Pur, apakah hari ini Anda sudah bergerak aktif? Ayo lakukan minimal 5.000 langkah! 🚶",
+        "Stevhan, defisit kalori adalah satu-satunya hukum fisika yang diakui untuk menurunkan berat badan. ⚖️",
+        "Dewa, jangan lupa cukupi kebutuhan air minum 2-3 liter per hari agar metabolisme lancar. 💧",
+        "Tip Hari Ini: Kurangi konsumsi gorengan pinggir jalan. Minyak jenuhnya sangat tinggi kalori jahat! 🍤",
+        "Kurangi porsi manis, perbanyak porsi senyum. Semangat diet sehatnya bertiga! 😄",
+        "Pur, pertahankan semangatmu! Gyukaku Paket Standar sudah menanti sang juara sejati. 🥇",
+        "Stevhan, jadikan tantangan 2 bulan ini sebagai batu loncatan untuk gaya hidup sehat selamanya. 🚀",
+        "Dewa, jangan biarkan godaan martabak manis meruntuhkan pertahanan defisit kalori Anda! 🥞",
+        "Tip Hari Ini: Pilihlah sumber protein rendah lemak seperti dada ayam tanpa kulit, ikan, atau putih telur. 🥚",
+        "Jangan timbang berat badan berkali-kali sehari. Cukup sekali sehari di pagi hari untuk data yang akurat. 🗓️",
+        "Pur, Stevhan, Dewa, buktikan siapa di antara kalian yang memiliki tekad paling kuat! 🔥",
+        "Tip Hari Ini: Nikmati perjalanan penurunan berat badan ini tanpa stres berlebih. Stres bisa memicu hormon penimbun lemak (kortisol). 🧘",
+        "Selamat berjuang sampai 29 Juli! Juara 1 siap makan gratis, Juara 2 bayar 10%, Juara 3 siap-siap 90%! 🏆🎉"
+    ];
+
+    const quoteTextEl = document.getElementById('daily-quote-text');
+    const btnRefreshQuote = document.getElementById('btn-refresh-quote');
+
+    function showRandomQuote() {
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        quoteTextEl.textContent = quotes[randomIndex];
+    }
+
+    // Initialize with a random quote
+    showRandomQuote();
+
+    // Listen for refresh button click
+    btnRefreshQuote.addEventListener('click', () => {
+        showRandomQuote();
+    });
+
     btnCloseSuccess.addEventListener('click', () => {
         successOverlay.classList.remove('active');
         stopConfetti();
