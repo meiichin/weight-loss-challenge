@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // Constant weight data
-    const START_WEIGHT_LU = 88.0;
-    const START_WEIGHT_TEMEN = 67.1;
-    const START_WEIGHT_DEWA = 84.75;
-    const START_DATE = new Date('2026-05-26T00:00:00');
-    const END_DATE = new Date('2026-07-27T08:00:00');
+    const START_WEIGHT_LU = 88.2;
+    const START_WEIGHT_TEMEN = 67.3;
+    const START_WEIGHT_DEWA = 84.5;
+    const START_DATE = new Date('2026-05-29T00:00:00');
+    const END_DATE = new Date('2026-07-29T08:00:00');
 
     // DOM Elements
     const daysEl = document.getElementById('days');
@@ -37,7 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const sigTemenBox = document.getElementById('sig-temen-box');
     const sigTemenStatus = document.getElementById('sig-temen-status');
     const sigTemenContent = document.getElementById('sig-temen-content');
+    const sigDewaBox = document.getElementById('sig-dewa-box');
+    const sigDewaStatus = document.getElementById('sig-dewa-status');
+    const sigDewaContent = document.getElementById('sig-dewa-content');
     const btnResetAgreement = document.getElementById('btn-reset-agreement');
+    const modalTitle = document.getElementById('modal-title');
+    let currentSigningParty = 'stevhan'; // 'stevhan' or 'dewa'
     
     // Success Overlay Elements
     const successOverlay = document.getElementById('success-overlay');
@@ -125,11 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
             simDewaRes.style.color = 'var(--text-secondary)';
         }
 
-        // Leaderboard standings
+        // Leaderboard standings — semua ikut taruhan
         let standings = [];
         if (valLu > 0) standings.push({ name: 'Pur', pct: pctLu, color: '#00d2ff' });
         if (valTemen > 0) standings.push({ name: 'Stevhan', pct: pctTemen, color: '#ff3b70' });
-        if (valDewa > 0) standings.push({ name: 'Dewa', pct: pctDewa, color: '#ffbd00', noBet: true });
+        if (valDewa > 0) standings.push({ name: 'Dewa', pct: pctDewa, color: '#ffbd00' });
 
         standings.sort((a, b) => b.pct - a.pct);
 
@@ -144,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
                 standingsHtml += `
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
-                        <span>${medal} <span style="color: ${s.color}; font-weight: 700;">${s.name}</span> ${s.noBet ? '<span style="font-size: 0.7rem; color: var(--text-secondary);"> (Hanya Challenge)</span>' : ''}</span>
+                        <span>${medal} <span style="color: ${s.color}; font-weight: 700;">${s.name}</span></span>
                         <span style="font-family: var(--font-heading); font-weight: 700; color: #ffffff;">${s.pct.toFixed(2)}%</span>
                     </div>
                 `;
@@ -152,23 +157,34 @@ document.addEventListener('DOMContentLoaded', () => {
             standingsHtml += '</div></div>';
         }
 
-        // Determine winner
+        // Determine taruhan winner among all 3 participants
         let winText = '';
-        if (valLu > 0 && valTemen > 0) {
+        if (valLu > 0 || valTemen > 0 || valDewa > 0) {
             simWinner.classList.add('success-alert');
-            
-            if (pctLu > pctTemen) {
-                const diff = pctLu - pctTemen;
-                winText = `🏆 <strong>Pur memimpin taruhan!</strong> Penurunan Pur lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Stevhan. (Traktiran gratis menanti!)`;
-            } else if (pctTemen > pctLu) {
-                const diff = pctTemen - pctLu;
-                winText = `🏆 <strong>Stevhan memimpin taruhan!</strong> Penurunan Stevhan lebih besar <strong>${diff.toFixed(2)}%</strong> daripada Pur. (Traktiran gratis menanti!)`;
+
+            // Sort only parties who have entered values
+            const betParties = [
+                valLu > 0 ? { name: 'Pur', pct: pctLu } : null,
+                valTemen > 0 ? { name: 'Stevhan', pct: pctTemen } : null,
+                valDewa > 0 ? { name: 'Dewa', pct: pctDewa } : null,
+            ].filter(Boolean);
+            betParties.sort((a, b) => b.pct - a.pct);
+
+            if (betParties.length >= 2) {
+                const top = betParties[0];
+                const second = betParties[1];
+                if (top.pct > second.pct) {
+                    const diff = top.pct - second.pct;
+                    winText = `🏆 <strong>${top.name} memimpin!</strong> Selisih <strong>${diff.toFixed(2)}%</strong> dari ${betParties.slice(1).map(p => p.name).join(' & ')}. (Traktiran gratis menanti!)`;
+                } else {
+                    winText = `⚖️ <strong>Hasil Seri!</strong> Keduanya turun tepat <strong>${top.pct.toFixed(2)}%</strong>. Siap-siap patungan Gyukaku!`;
+                }
             } else {
-                winText = `⚖️ <strong>Hasil Seri!</strong> Keduanya turun tepat <strong>${pctLu.toFixed(2)}%</strong>. Siap-siap patungan Gyukaku!`;
+                winText = `📊 Masukkan berat lebih banyak peserta untuk melihat perbandingan!`;
             }
         } else {
             simWinner.classList.remove('success-alert');
-            winText = 'Masukkan berat badan Pur & Stevhan untuk melihat prediksi taruhan!';
+            winText = 'Masukkan berat badan akhir untuk melihat prediksi!';
         }
 
         if (standings.length > 0) {
@@ -262,12 +278,20 @@ document.addEventListener('DOMContentLoaded', () => {
     signatureCanvas.addEventListener('touchmove', draw, { passive: false });
     signatureCanvas.addEventListener('touchend', stopDrawing);
 
-    // Modal Control
-    btnOpenSign.addEventListener('click', () => {
+    // Modal Control — supports multiple signers
+    function openModal(party) {
+        currentSigningParty = party;
+        if (party === 'stevhan') {
+            modalTitle.textContent = 'Tanda Tangan Pihak II (Stevhan)';
+        } else {
+            modalTitle.textContent = 'Tanda Tangan Pihak III (Dewa)';
+        }
         signModal.classList.add('active');
-        // Let UI lay out before resizing canvas to ensure getBoundingClientRect works correctly
         setTimeout(resizeCanvas, 50);
-    });
+    }
+
+    document.getElementById('btn-open-sign').addEventListener('click', () => openModal('stevhan'));
+    document.getElementById('btn-open-sign-dewa').addEventListener('click', () => openModal('dewa'));
 
     function closeModal() {
         signModal.classList.remove('active');
@@ -301,13 +325,17 @@ document.addEventListener('DOMContentLoaded', () => {
             minute: '2-digit'
         });
 
-        // Save to localStorage
-        localStorage.setItem('weight_challenge_signed', 'true');
-        localStorage.setItem('weight_challenge_sig_img', dataUrl);
-        localStorage.setItem('weight_challenge_sig_date', formattedDate);
-
-        // Apply signed state
-        applySignedState(dataUrl, formattedDate);
+        if (currentSigningParty === 'stevhan') {
+            localStorage.setItem('weight_challenge_signed', 'true');
+            localStorage.setItem('weight_challenge_sig_img', dataUrl);
+            localStorage.setItem('weight_challenge_sig_date', formattedDate);
+            applySignedState('stevhan', dataUrl, formattedDate);
+        } else {
+            localStorage.setItem('weight_challenge_dewa_signed', 'true');
+            localStorage.setItem('weight_challenge_dewa_sig_img', dataUrl);
+            localStorage.setItem('weight_challenge_dewa_sig_date', formattedDate);
+            applySignedState('dewa', dataUrl, formattedDate);
+        }
 
         // Close modal, show success screen, explode confetti
         closeModal();
@@ -325,69 +353,75 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------
     // 4. PERSISTENT STATE MANAGEMENT
     // ----------------------------------------------------
-    function applySignedState(imgUrl, dateStr) {
-        sigTemenBox.classList.add('signed');
-        sigTemenStatus.className = 'sig-status badge-success';
-        sigTemenStatus.textContent = '✓ Telah Menyetujui';
-        
-        sigTemenContent.innerHTML = `
-            <div class="signature-display">
-                <img src="${imgUrl}" class="signature-img" alt="Tanda Tangan Stevhan">
-            </div>
-            <span class="sig-date">${dateStr}</span>
-        `;
+    function applySignedState(party, imgUrl, dateStr) {
+        if (party === 'stevhan') {
+            sigTemenBox.classList.add('signed');
+            sigTemenStatus.className = 'sig-status badge-success';
+            sigTemenStatus.textContent = '✓ Telah Menyetujui';
+            sigTemenContent.innerHTML = `
+                <div class="signature-display">
+                    <img src="${imgUrl}" class="signature-img" alt="Tanda Tangan Stevhan">
+                </div>
+                <span class="sig-date">${dateStr}</span>
+            `;
+        } else {
+            sigDewaBox.classList.add('signed');
+            sigDewaStatus.className = 'sig-status badge-success';
+            sigDewaStatus.textContent = '✓ Telah Menyetujui';
+            sigDewaContent.innerHTML = `
+                <div class="signature-display">
+                    <img src="${imgUrl}" class="signature-img" alt="Tanda Tangan Dewa" style="filter: invert(1) brightness(0.8) sepia(1) hue-rotate(30deg) saturate(3);">
+                </div>
+                <span class="sig-date">${dateStr}</span>
+            `;
+        }
     }
 
-    function applyDefaultSignedState() {
-        sigTemenBox.classList.add('signed');
-        sigTemenStatus.className = 'sig-status badge-success';
-        sigTemenStatus.textContent = '✓ Telah Menyetujui';
-        
-        sigTemenContent.innerHTML = `
-            <div class="signature-display">
-                <span class="handwritten-sig" style="color: #ff3b70;">Stevhan (Signed)</span>
-            </div>
-            <span class="sig-date">26 Mei 2026, 15:00</span>
-        `;
-    }
-
-    function applyUnsignedState() {
-        sigTemenBox.classList.remove('signed');
-        sigTemenStatus.className = 'sig-status badge-waiting';
-        sigTemenStatus.textContent = '⏳ Menunggu Persetujuan';
-        
-        sigTemenContent.innerHTML = `
-            <button class="btn btn-primary" id="btn-open-sign">
-                <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
-            </button>
-            <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
-        `;
-        
-        // Re-attach event listener to the button
-        document.getElementById('btn-open-sign').addEventListener('click', () => {
-            signModal.classList.add('active');
-            setTimeout(resizeCanvas, 50);
-        });
+    function applyUnsignedState(party) {
+        if (party === 'stevhan') {
+            sigTemenBox.classList.remove('signed');
+            sigTemenStatus.className = 'sig-status badge-waiting';
+            sigTemenStatus.textContent = '⏳ Menunggu Persetujuan';
+            sigTemenContent.innerHTML = `
+                <button class="btn btn-primary" id="btn-open-sign">
+                    <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
+                </button>
+                <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
+            `;
+            document.getElementById('btn-open-sign').addEventListener('click', () => openModal('stevhan'));
+        } else {
+            sigDewaBox.classList.remove('signed');
+            sigDewaStatus.className = 'sig-status badge-waiting';
+            sigDewaStatus.textContent = '⏳ Menunggu Persetujuan';
+            sigDewaContent.innerHTML = `
+                <button class="btn btn-primary" id="btn-open-sign-dewa">
+                    <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
+                </button>
+                <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
+            `;
+            document.getElementById('btn-open-sign-dewa').addEventListener('click', () => openModal('dewa'));
+        }
     }
 
     function checkExistingAgreement() {
-        const isSigned = localStorage.getItem('weight_challenge_signed');
-        const sigImg = localStorage.getItem('weight_challenge_sig_img');
-        const sigDate = localStorage.getItem('weight_challenge_sig_date');
-
-        if (isSigned === 'true') {
-            if (sigImg) {
-                applySignedState(sigImg, sigDate);
-            } else {
-                applyDefaultSignedState();
-            }
-        } else if (isSigned === null) {
-            // First load: Default to signed
-            localStorage.setItem('weight_challenge_signed', 'true');
-            applyDefaultSignedState();
+        // Stevhan
+        const stevhanSigned = localStorage.getItem('weight_challenge_signed');
+        const stevhanImg = localStorage.getItem('weight_challenge_sig_img');
+        const stevhanDate = localStorage.getItem('weight_challenge_sig_date');
+        if (stevhanSigned === 'true' && stevhanImg) {
+            applySignedState('stevhan', stevhanImg, stevhanDate);
         } else {
-            // isSigned === 'false': show unsigned state
-            applyUnsignedState();
+            applyUnsignedState('stevhan');
+        }
+
+        // Dewa
+        const dewaSigned = localStorage.getItem('weight_challenge_dewa_signed');
+        const dewaImg = localStorage.getItem('weight_challenge_dewa_sig_img');
+        const dewaDate = localStorage.getItem('weight_challenge_dewa_sig_date');
+        if (dewaSigned === 'true' && dewaImg) {
+            applySignedState('dewa', dewaImg, dewaDate);
+        } else {
+            applyUnsignedState('dewa');
         }
     }
 
@@ -395,10 +429,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset logic (Escape reset persetujuannya)
     btnResetAgreement.addEventListener('click', () => {
-        if (confirm('Apakah Anda yakin ingin me-reset persetujuan tanda tangan kontrak ini? Pihak Kedua harus menandatangani ulang.')) {
-            localStorage.setItem('weight_challenge_signed', 'false');
+        if (confirm('Apakah Anda yakin ingin me-reset persetujuan? Stevhan & Dewa harus menandatangani ulang.')) {
+            localStorage.removeItem('weight_challenge_signed');
             localStorage.removeItem('weight_challenge_sig_img');
             localStorage.removeItem('weight_challenge_sig_date');
+            localStorage.removeItem('weight_challenge_dewa_signed');
+            localStorage.removeItem('weight_challenge_dewa_sig_img');
+            localStorage.removeItem('weight_challenge_dewa_sig_date');
             window.location.reload();
         }
     });
