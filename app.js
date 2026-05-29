@@ -1,3 +1,21 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBro0-qMDhbzvrl1ZzwvNp27M8yAvnE2lg",
+  authDomain: "weight-loss-challenge-38ab5.firebaseapp.com",
+  projectId: "weight-loss-challenge-38ab5",
+  storageBucket: "weight-loss-challenge-38ab5.firebasestorage.app",
+  messagingSenderId: "130546003837",
+  appId: "1:130546003837:web:a5f9ec3902d8cff0ca2614"
+};
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const agreementDocRef = doc(db, "agreements", "main");
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // Constant weight data
@@ -25,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal Elements
     const signModal = document.getElementById('sign-modal');
-    const btnOpenSign = document.getElementById('btn-open-sign');
     const btnCloseModal = document.getElementById('btn-close-modal');
     const modalOverlay = document.getElementById('modal-overlay');
     const btnClearCanvas = document.getElementById('btn-clear-canvas');
@@ -34,15 +51,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const sigCtx = signatureCanvas.getContext('2d');
 
     // Agreement State Elements
+    const sigPurBox = document.getElementById('sig-pur-box');
+    const sigPurStatus = document.getElementById('sig-pur-status');
+    const sigPurContent = document.getElementById('sig-pur-content');
+    
     const sigTemenBox = document.getElementById('sig-temen-box');
     const sigTemenStatus = document.getElementById('sig-temen-status');
     const sigTemenContent = document.getElementById('sig-temen-content');
+    
     const sigDewaBox = document.getElementById('sig-dewa-box');
     const sigDewaStatus = document.getElementById('sig-dewa-status');
     const sigDewaContent = document.getElementById('sig-dewa-content');
+    
     const btnResetAgreement = document.getElementById('btn-reset-agreement');
     const modalTitle = document.getElementById('modal-title');
-    let currentSigningParty = 'stevhan'; // 'stevhan' or 'dewa'
+    let currentSigningParty = 'pur'; // 'pur', 'stevhan' or 'dewa'
     
     // Success Overlay Elements
     const successOverlay = document.getElementById('success-overlay');
@@ -296,7 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modal Control — supports multiple signers
     function openModal(party) {
         currentSigningParty = party;
-        if (party === 'stevhan') {
+        if (party === 'pur') {
+            modalTitle.textContent = 'Tanda Tangan Pihak I (Pur)';
+        } else if (party === 'stevhan') {
             modalTitle.textContent = 'Tanda Tangan Pihak II (Stevhan)';
         } else {
             modalTitle.textContent = 'Tanda Tangan Pihak III (Dewa)';
@@ -304,9 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
         signModal.classList.add('active');
         setTimeout(resizeCanvas, 50);
     }
-
-    document.getElementById('btn-open-sign').addEventListener('click', () => openModal('stevhan'));
-    document.getElementById('btn-open-sign-dewa').addEventListener('click', () => openModal('dewa'));
 
     function closeModal() {
         signModal.classList.remove('active');
@@ -322,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Save Signature
-    btnSaveSignature.addEventListener('click', () => {
+    btnSaveSignature.addEventListener('click', async () => {
         // Check if canvas is empty
         const isCanvasEmpty = checkCanvasEmpty(signatureCanvas);
         if (isCanvasEmpty) {
@@ -340,22 +362,26 @@ document.addEventListener('DOMContentLoaded', () => {
             minute: '2-digit'
         });
 
-        if (currentSigningParty === 'stevhan') {
-            localStorage.setItem('weight_challenge_signed', 'true');
-            localStorage.setItem('weight_challenge_sig_img', dataUrl);
-            localStorage.setItem('weight_challenge_sig_date', formattedDate);
-            applySignedState('stevhan', dataUrl, formattedDate);
-        } else {
-            localStorage.setItem('weight_challenge_dewa_signed', 'true');
-            localStorage.setItem('weight_challenge_dewa_sig_img', dataUrl);
-            localStorage.setItem('weight_challenge_dewa_sig_date', formattedDate);
-            applySignedState('dewa', dataUrl, formattedDate);
-        }
+        btnSaveSignature.disabled = true;
+        btnSaveSignature.textContent = 'Menyimpan...';
 
-        // Close modal, show success screen, explode confetti
-        closeModal();
-        successOverlay.classList.add('active');
-        startConfetti();
+        try {
+            await setDoc(agreementDocRef, {
+                [currentSigningParty]: {
+                    signed: true,
+                    img: dataUrl,
+                    date: formattedDate
+                }
+            }, { merge: true });
+
+            closeModal();
+        } catch (error) {
+            console.error("Error saving signature: ", error);
+            alert("Gagal menyimpan tanda tangan ke Firebase. Pastikan Rules Firestore sudah diset ke Test Mode.");
+        } finally {
+            btnSaveSignature.disabled = false;
+            btnSaveSignature.textContent = 'Konfirmasi & Setuju ✓';
+        }
     });
 
     function checkCanvasEmpty(canvas) {
@@ -366,10 +392,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ----------------------------------------------------
-    // 4. PERSISTENT STATE MANAGEMENT
+    // 4. PERSISTENT STATE MANAGEMENT (FIREBASE)
     // ----------------------------------------------------
     function applySignedState(party, imgUrl, dateStr) {
-        if (party === 'stevhan') {
+        if (party === 'pur') {
+            sigPurBox.classList.add('signed');
+            sigPurStatus.className = 'sig-status badge-success';
+            sigPurStatus.textContent = '✓ Telah Menyetujui';
+            sigPurContent.innerHTML = `
+                <div class="signature-display">
+                    <img src="${imgUrl}" class="signature-img" alt="Tanda Tangan Pur" style="filter: invert(1) brightness(0.8) sepia(1) hue-rotate(180deg) saturate(3);">
+                </div>
+                <span class="sig-date">${dateStr}</span>
+            `;
+        } else if (party === 'stevhan') {
             sigTemenBox.classList.add('signed');
             sigTemenStatus.className = 'sig-status badge-success';
             sigTemenStatus.textContent = '✓ Telah Menyetujui';
@@ -393,7 +429,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyUnsignedState(party) {
-        if (party === 'stevhan') {
+        if (party === 'pur') {
+            sigPurBox.classList.remove('signed');
+            sigPurStatus.className = 'sig-status badge-waiting';
+            sigPurStatus.textContent = '⏳ Menunggu Persetujuan';
+            sigPurContent.innerHTML = `
+                <button class="btn btn-primary" id="btn-open-sign-pur">
+                    <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
+                </button>
+                <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
+            `;
+            document.getElementById('btn-open-sign-pur').addEventListener('click', () => openModal('pur'));
+        } else if (party === 'stevhan') {
             sigTemenBox.classList.remove('signed');
             sigTemenStatus.className = 'sig-status badge-waiting';
             sigTemenStatus.textContent = '⏳ Menunggu Persetujuan';
@@ -418,40 +465,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function checkExistingAgreement() {
-        // Stevhan
-        const stevhanSigned = localStorage.getItem('weight_challenge_signed');
-        const stevhanImg = localStorage.getItem('weight_challenge_sig_img');
-        const stevhanDate = localStorage.getItem('weight_challenge_sig_date');
-        if (stevhanSigned === 'true' && stevhanImg) {
-            applySignedState('stevhan', stevhanImg, stevhanDate);
-        } else {
-            applyUnsignedState('stevhan');
-        }
+    let overlayShownThisSession = sessionStorage.getItem('weight_challenge_overlay_shown') === 'true';
 
-        // Dewa
-        const dewaSigned = localStorage.getItem('weight_challenge_dewa_signed');
-        const dewaImg = localStorage.getItem('weight_challenge_dewa_sig_img');
-        const dewaDate = localStorage.getItem('weight_challenge_dewa_sig_date');
-        if (dewaSigned === 'true' && dewaImg) {
-            applySignedState('dewa', dewaImg, dewaDate);
+    // Firestore Sync Real-Time listener
+    onSnapshot(agreementDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            // Check Pur
+            if (data.pur && data.pur.signed) {
+                applySignedState('pur', data.pur.img, data.pur.date);
+            } else {
+                applyUnsignedState('pur');
+            }
+
+            // Check Stevhan
+            if (data.stevhan && data.stevhan.signed) {
+                applySignedState('stevhan', data.stevhan.img, data.stevhan.date);
+            } else {
+                applyUnsignedState('stevhan');
+            }
+
+            // Check Dewa
+            if (data.dewa && data.dewa.signed) {
+                applySignedState('dewa', data.dewa.img, data.dewa.date);
+            } else {
+                applyUnsignedState('dewa');
+            }
+
+            // Confetti Trigger if all 3 are signed
+            const allSigned = data.pur?.signed && data.stevhan?.signed && data.dewa?.signed;
+            if (allSigned && !overlayShownThisSession) {
+                successOverlay.classList.add('active');
+                startConfetti();
+                sessionStorage.setItem('weight_challenge_overlay_shown', 'true');
+                overlayShownThisSession = true;
+            }
         } else {
+            applyUnsignedState('pur');
+            applyUnsignedState('stevhan');
             applyUnsignedState('dewa');
         }
-    }
-
-    checkExistingAgreement();
+    }, (error) => {
+        console.error("Firestore sync error: ", error);
+        alert("Firestore Error. Harap periksa apakah Firestore Database sudah dibuat di Firebase Console Anda dan rulesnya diset ke test mode.");
+    });
 
     // Reset logic (Escape reset persetujuannya)
-    btnResetAgreement.addEventListener('click', () => {
-        if (confirm('Apakah Anda yakin ingin me-reset persetujuan? Stevhan & Dewa harus menandatangani ulang.')) {
-            localStorage.removeItem('weight_challenge_signed');
-            localStorage.removeItem('weight_challenge_sig_img');
-            localStorage.removeItem('weight_challenge_sig_date');
-            localStorage.removeItem('weight_challenge_dewa_signed');
-            localStorage.removeItem('weight_challenge_dewa_sig_img');
-            localStorage.removeItem('weight_challenge_dewa_sig_date');
-            window.location.reload();
+    btnResetAgreement.addEventListener('click', async () => {
+        if (confirm('Apakah Anda yakin ingin me-reset persetujuan? Semua pihak harus menandatangani ulang.')) {
+            btnResetAgreement.disabled = true;
+            try {
+                await setDoc(agreementDocRef, {
+                    pur: { signed: false, img: null, date: null },
+                    stevhan: { signed: false, img: null, date: null },
+                    dewa: { signed: false, img: null, date: null }
+                });
+                sessionStorage.removeItem('weight_challenge_overlay_shown');
+                window.location.reload();
+            } catch (error) {
+                console.error("Reset error: ", error);
+                alert("Gagal melakukan reset persetujuan di Firebase.");
+            } finally {
+                btnResetAgreement.disabled = false;
+            }
         }
     });
 

@@ -236,18 +236,17 @@
                 <p class="sign-sub">Tantangan resmi berjalan setelah kedua belah pihak menandatangani kontrak digital ini.</p>
                 
                 <div class="signatures-wrapper">
-                    <!-- Lu's Signature -->
-                    <div class="sig-box signed" id="sig-lu-box">
+                    <!-- Pur's Signature -->
+                    <div class="sig-box" id="sig-pur-box">
                         <div class="sig-header">
                             <span class="sig-title">Pur (Pihak I)</span>
-                            <span class="sig-status badge-success">✓ Telah Menyetujui</span>
+                            <span class="sig-status badge-waiting" id="sig-pur-status">⏳ Menunggu Persetujuan</span>
                         </div>
-                        <div class="sig-content">
-                            <!-- Pre-signed style signature image/text -->
-                            <div class="signature-display">
-                                <span class="handwritten-sig">Pur (Signed)</span>
-                            </div>
-                            <span class="sig-date" id="sig-lu-date">26 Mei 2026, 08:00</span>
+                        <div class="sig-content" id="sig-pur-content">
+                            <button class="btn btn-primary" id="btn-open-sign-pur">
+                                <span class="btn-icon">✍️</span> Tanda Tangani Sekarang
+                            </button>
+                            <p class="sig-prompt">Ketuk tombol untuk menyetujui perjanjian ini</p>
                         </div>
                     </div>
 
@@ -335,6 +334,6 @@
     </div>
 
     <!-- Script file -->
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
