@@ -78,6 +78,12 @@ body::after {
     gap: 2rem;
 }
 
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
 /* HEADER */
 .header {
     text-align: center;
@@ -1113,7 +1119,6 @@ h1 {
     border: 1.5px solid rgba(255, 189, 0, 0.35);
     border-radius: 20px;
     padding: 1.25rem 1.75rem;
-    margin-bottom: 2.25rem;
     display: flex;
     align-items: center;
     gap: 1.25rem;
