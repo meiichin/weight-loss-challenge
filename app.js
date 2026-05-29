@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sigDewaStatus = document.getElementById('sig-dewa-status');
     const sigDewaContent = document.getElementById('sig-dewa-content');
     
-    const btnResetAgreement = document.getElementById('btn-reset-agreement');
     const modalTitle = document.getElementById('modal-title');
     let currentSigningParty = 'pur'; // 'pur', 'stevhan' or 'dewa'
     
@@ -799,27 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Firestore Error. Harap periksa apakah Firestore Database sudah dibuat di Firebase Console Anda dan rulesnya diset ke test mode.");
     });
 
-    // Reset logic (Escape reset persetujuannya)
-    btnResetAgreement.addEventListener('click', async () => {
-        if (confirm('Apakah Anda yakin ingin me-reset persetujuan? Semua pihak harus menandatangani ulang.')) {
-            btnResetAgreement.disabled = true;
-            try {
-                await setDoc(agreementDocRef, {
-                    pur: { signed: false, img: null, date: null },
-                    stevhan: { signed: false, img: null, date: null },
-                    dewa: { signed: false, img: null, date: null },
-                    weighIns: []
-                });
-                sessionStorage.removeItem('weight_challenge_overlay_shown');
-                window.location.reload();
-            } catch (error) {
-                console.error("Reset error: ", error);
-                alert("Gagal melakukan reset persetujuan di Firebase.");
-            } finally {
-                btnResetAgreement.disabled = false;
-            }
-        }
-    });
+
 
     btnCloseSuccess.addEventListener('click', () => {
         successOverlay.classList.remove('active');
