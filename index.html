@@ -176,8 +176,16 @@
                 <h2>📈 Grafik Progress & Input Harian</h2>
                 <p class="section-desc" style="text-align: center; margin-bottom: 1.5rem;">Pantau perkembangan penurunan berat badan real-time dari timbangan awal sampai sekarang.</p>
                 
+                <!-- Chart Tabs -->
+                <div class="chart-tabs" style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="chart-tab-btn active" data-chart-type="weight">📈 Tren Berat (kg)</button>
+                    <button class="chart-tab-btn" data-chart-type="percent">📉 % Penurunan</button>
+                    <button class="chart-tab-btn" data-chart-type="kg-lost">⚖️ Kg Turun</button>
+                    <button class="chart-tab-btn" data-chart-type="leaderboard">🏆 Klasemen Standings</button>
+                </div>
+
                 <!-- Chart container -->
-                <div class="chart-container-wrapper" style="position: relative; height: 320px; width: 100%; margin-bottom: 1.5rem;">
+                <div class="chart-container-wrapper" style="position: relative; height: 340px; width: 100%; margin-bottom: 1.5rem;">
                     <canvas id="progress-chart"></canvas>
                 </div>
 
@@ -244,59 +252,17 @@
                 <h2>📅 Jadwal Timbangan Resmi</h2>
                 <p class="section-desc" style="text-align: center; margin-bottom: 1.5rem;">Perjalanan berat badan resmi. Terdiri dari timbangan awal, 3 kali timbangan antara, dan timbangan akhir.</p>
                 
-                <div class="schedule-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1.25rem;">
-                    <!-- Schedule 1 -->
-                    <div class="schedule-card completed" style="background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 1.25rem; text-align: center; position: relative;">
-                        <span class="status-badge" style="background: #10b981; color: #ffffff; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 50px; font-weight: 700; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); text-transform: uppercase; white-space: nowrap;">Done ✓</span>
-                        <h4 style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #ffffff;">Timbangan Awal</h4>
-                        <span class="schedule-date" style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">29 Mei 2026</span>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
-                            Pur: 88.2 kg<br>
-                            Stevhan: 67.3 kg<br>
-                            Dewa: 84.5 kg
-                        </div>
-                    </div>
+                <div class="schedule-grid" id="official-schedule-grid">
+                    <!-- Dynamic schedule cards loaded from Firebase -->
+                </div>
 
-                    <!-- Schedule 2 -->
-                    <div class="schedule-card completed" style="background: rgba(16, 185, 129, 0.08); border: 1.5px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 1.25rem; text-align: center; position: relative;">
-                        <span class="status-badge" style="background: #10b981; color: #ffffff; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 50px; font-weight: 700; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); text-transform: uppercase; white-space: nowrap;">Done ✓</span>
-                        <h4 style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #ffffff;">Timbangan Antara I</h4>
-                        <span class="schedule-date" style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">12 Juni 2026</span>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">
-                            Pur: 86.1 kg<br>
-                            Stevhan: 67.1 kg<br>
-                            Dewa: 84.0 kg
-                        </div>
-                    </div>
-
-                    <!-- Schedule 3 -->
-                    <div class="schedule-card upcoming" style="background: rgba(255, 255, 255, 0.03); border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem; text-align: center; position: relative;">
-                        <span class="status-badge" style="background: #ffbd00; color: #111422; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 50px; font-weight: 700; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); text-transform: uppercase; white-space: nowrap;">Nanti ⏳</span>
-                        <h4 style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #ffffff;">Timbangan Antara II</h4>
-                        <span class="schedule-date" style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">26 Juni 2026</span>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; font-style: italic;">
-                            Menunggu jadwal timbangan
-                        </div>
-                    </div>
-
-                    <!-- Schedule 4 -->
-                    <div class="schedule-card upcoming" style="background: rgba(255, 255, 255, 0.03); border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem; text-align: center; position: relative;">
-                        <span class="status-badge" style="background: #ffbd00; color: #111422; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 50px; font-weight: 700; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); text-transform: uppercase; white-space: nowrap;">Nanti ⏳</span>
-                        <h4 style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #ffffff;">Timbangan Antara III</h4>
-                        <span class="schedule-date" style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">10 Juli 2026</span>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; font-style: italic;">
-                            Menunggu jadwal timbangan
-                        </div>
-                    </div>
-
-                    <!-- Schedule 5 -->
-                    <div class="schedule-card upcoming" style="background: rgba(255, 255, 255, 0.03); border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 1.25rem; text-align: center; position: relative;">
-                        <span class="status-badge" style="background: #ff3b70; color: #ffffff; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 50px; font-weight: 700; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); text-transform: uppercase; white-space: nowrap;">Final 🏆</span>
-                        <h4 style="margin-top: 0.5rem; margin-bottom: 0.25rem; font-size: 0.9rem; color: #ffffff;">Timbangan Akhir</h4>
-                        <span class="schedule-date" style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem;">29 Juli 2026</span>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; font-style: italic;">
-                            Penentuan Juara Gyukaku!
-                        </div>
+                <!-- Milestone Chart Container -->
+                <div class="milestone-chart-wrapper" style="position: relative; margin-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 1.5rem; width: 100%;">
+                    <h4 style="font-family: var(--font-heading); font-size: 1rem; margin-bottom: 1rem; color: #ffffff; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        📊 Grafik Tren Timbangan Resmi (Berat Badan - kg)
+                    </h4>
+                    <div style="position: relative; height: 200px; width: 100%;">
+                        <canvas id="milestone-chart"></canvas>
                     </div>
                 </div>
             </section>

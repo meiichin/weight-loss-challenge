@@ -466,12 +466,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CHART & HISTORICAL TABLE LOGIC ---
     let progressChart = null;
+    let milestoneChart = null;
     let localLogs = [];
+    let currentChartType = 'weight';
+
+    // Set up chart tab toggles
+    document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.chart-tab-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+            currentChartType = btn.getAttribute('data-chart-type');
+            renderChart(localLogs);
+        });
+    });
 
     function renderChart(logs) {
         const ctx = document.getElementById('progress-chart').getContext('2d');
         const sortedLogs = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
 
+        // Get unique sorted dates
         const dates = ['2026-05-29'];
         sortedLogs.forEach(log => {
             if (!dates.includes(log.date) && log.date >= '2026-05-29') {
@@ -480,13 +495,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         dates.sort((a, b) => new Date(a) - new Date(b));
 
+        const formatChartDate = (dateStr) => {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        };
+        const labels = dates.map(formatChartDate);
+
+        // Get weights per date
         let currentWeightPur = START_WEIGHT_LU;
         let currentWeightStevhan = START_WEIGHT_TEMEN;
         let currentWeightDewa = START_WEIGHT_DEWA;
 
-        const dataPur = [0];
-        const dataStevhan = [0];
-        const dataDewa = [0];
+        const weightsPur = [START_WEIGHT_LU];
+        const weightsStevhan = [START_WEIGHT_TEMEN];
+        const weightsDewa = [START_WEIGHT_DEWA];
 
         for (let i = 1; i < dates.length; i++) {
             const currentDate = dates[i];
@@ -498,23 +520,130 @@ document.addEventListener('DOMContentLoaded', () => {
             if (logsStevhan.length > 0) currentWeightStevhan = logsStevhan[logsStevhan.length - 1].weight;
             if (logsDewa.length > 0) currentWeightDewa = logsDewa[logsDewa.length - 1].weight;
 
-            const pctPur = ((START_WEIGHT_LU - currentWeightPur) / START_WEIGHT_LU) * 100;
-            const pctStevhan = ((START_WEIGHT_TEMEN - currentWeightStevhan) / START_WEIGHT_TEMEN) * 100;
-            const pctDewa = ((START_WEIGHT_DEWA - currentWeightDewa) / START_WEIGHT_DEWA) * 100;
-
-            dataPur.push(parseFloat(pctPur.toFixed(2)));
-            dataStevhan.push(parseFloat(pctStevhan.toFixed(2)));
-            dataDewa.push(parseFloat(pctDewa.toFixed(2)));
+            weightsPur.push(currentWeightPur);
+            weightsStevhan.push(currentWeightStevhan);
+            weightsDewa.push(currentWeightDewa);
         }
 
-        const formatChartDate = (dateStr) => {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-        };
-        const labels = dates.map(formatChartDate);
+        // Calculate latest standing values for leaderboard
+        const latestWeightPur = weightsPur[weightsPur.length - 1];
+        const latestWeightStevhan = weightsStevhan[weightsStevhan.length - 1];
+        const latestWeightDewa = weightsDewa[weightsDewa.length - 1];
+
+        const pctPurLatest = ((START_WEIGHT_LU - latestWeightPur) / START_WEIGHT_LU) * 100;
+        const pctStevhanLatest = ((START_WEIGHT_TEMEN - latestWeightStevhan) / START_WEIGHT_TEMEN) * 100;
+        const pctDewaLatest = ((START_WEIGHT_DEWA - latestWeightDewa) / START_WEIGHT_DEWA) * 100;
+
+        const kgPurLatest = START_WEIGHT_LU - latestWeightPur;
+        const kgStevhanLatest = START_WEIGHT_TEMEN - latestWeightStevhan;
+        const kgDewaLatest = START_WEIGHT_DEWA - latestWeightDewa;
 
         if (progressChart) {
             progressChart.destroy();
+        }
+
+        if (currentChartType === 'leaderboard') {
+            // Render a horizontal bar chart of current standings
+            progressChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Pur', 'Stevhan', 'Dewa'],
+                    datasets: [
+                        {
+                            label: '% Penurunan Saat Ini',
+                            data: [
+                                parseFloat(pctPurLatest.toFixed(2)),
+                                parseFloat(pctStevhanLatest.toFixed(2)),
+                                parseFloat(pctDewaLatest.toFixed(2))
+                            ],
+                            backgroundColor: [
+                                'rgba(0, 210, 255, 0.25)',
+                                'rgba(255, 59, 112, 0.25)',
+                                'rgba(255, 189, 0, 0.25)'
+                            ],
+                            borderColor: ['#00d2ff', '#ff3b70', '#ffbd00'],
+                            borderWidth: 2,
+                            borderRadius: 12,
+                            borderSkipped: false,
+                            maxBarThickness: 40
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const idx = context.dataIndex;
+                                    const kgs = [kgPurLatest, kgStevhanLatest, kgDewaLatest];
+                                    const pct = context.parsed.x;
+                                    return `${context.label}: ${pct.toFixed(2)}% turun (${kgs[idx].toFixed(1)} kg lost)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: function(value) { return value + '%'; }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Persentase Penurunan (%)',
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                color: function(context) {
+                                    const colors = ['#00d2ff', '#ff3b70', '#ffbd00'];
+                                    return colors[context.index] || '#ffffff';
+                                },
+                                font: { family: 'Plus Jakarta Sans', weight: 'bold', size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+            return;
+        }
+
+        // Generate line chart data
+        let datasetLabel = '';
+        let tooltipSuffix = '';
+        let yAxisLabel = '';
+        let dataPur = [];
+        let dataStevhan = [];
+        let dataDewa = [];
+
+        if (currentChartType === 'percent') {
+            datasetLabel = '% Turun';
+            tooltipSuffix = '%';
+            yAxisLabel = 'Total Penurunan (%)';
+            dataPur = weightsPur.map(w => parseFloat((((START_WEIGHT_LU - w) / START_WEIGHT_LU) * 100).toFixed(2)));
+            dataStevhan = weightsStevhan.map(w => parseFloat((((START_WEIGHT_TEMEN - w) / START_WEIGHT_TEMEN) * 100).toFixed(2)));
+            dataDewa = weightsDewa.map(w => parseFloat((((START_WEIGHT_DEWA - w) / START_WEIGHT_DEWA) * 100).toFixed(2)));
+        } else if (currentChartType === 'kg-lost') {
+            datasetLabel = 'Kg Turun';
+            tooltipSuffix = ' kg';
+            yAxisLabel = 'Total Turun (kg)';
+            dataPur = weightsPur.map(w => parseFloat((START_WEIGHT_LU - w).toFixed(1)));
+            dataStevhan = weightsStevhan.map(w => parseFloat((START_WEIGHT_TEMEN - w).toFixed(1)));
+            dataDewa = weightsDewa.map(w => parseFloat((START_WEIGHT_DEWA - w).toFixed(1)));
+        } else if (currentChartType === 'weight') {
+            datasetLabel = 'Berat';
+            tooltipSuffix = ' kg';
+            yAxisLabel = 'Berat Badan (kg)';
+            dataPur = weightsPur.map(w => parseFloat(w.toFixed(1)));
+            dataStevhan = weightsStevhan.map(w => parseFloat(w.toFixed(1)));
+            dataDewa = weightsDewa.map(w => parseFloat(w.toFixed(1)));
         }
 
         progressChart = new Chart(ctx, {
@@ -523,36 +652,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Pur (% Turun)',
+                        label: `Pur (${datasetLabel})`,
                         data: dataPur,
                         borderColor: '#00d2ff',
-                        backgroundColor: 'rgba(0, 210, 255, 0.1)',
+                        backgroundColor: 'rgba(0, 210, 255, 0.08)',
                         borderWidth: 3,
                         pointBackgroundColor: '#00d2ff',
                         pointBorderColor: '#ffffff',
-                        pointRadius: 4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                         tension: 0.25
                     },
                     {
-                        label: 'Stevhan (% Turun)',
+                        label: `Stevhan (${datasetLabel})`,
                         data: dataStevhan,
                         borderColor: '#ff3b70',
-                        backgroundColor: 'rgba(255, 59, 112, 0.1)',
+                        backgroundColor: 'rgba(255, 59, 112, 0.08)',
                         borderWidth: 3,
                         pointBackgroundColor: '#ff3b70',
                         pointBorderColor: '#ffffff',
-                        pointRadius: 4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                         tension: 0.25
                     },
                     {
-                        label: 'Dewa (% Turun)',
+                        label: `Dewa (${datasetLabel})`,
                         data: dataDewa,
                         borderColor: '#ffbd00',
-                        backgroundColor: 'rgba(255, 189, 0, 0.1)',
+                        backgroundColor: 'rgba(255, 189, 0, 0.08)',
                         borderWidth: 3,
                         pointBackgroundColor: '#ffbd00',
                         pointBorderColor: '#ffffff',
-                        pointRadius: 4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                         tension: 0.25
                     }
                 ]
@@ -562,33 +694,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        labels: { color: '#e5e7eb', font: { family: 'Plus Jakarta Sans', size: 11 } }
+                        labels: { color: '#e5e7eb', font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' } }
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(context.parsed.y % 1 === 0 ? 0 : 2) + tooltipSuffix;
                             }
                         }
                     }
                 },
                 scales: {
                     x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.04)' },
                         ticks: { color: '#9ca3af', font: { family: 'Plus Jakarta Sans' } }
                     },
                     y: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        grid: { color: 'rgba(255, 255, 255, 0.04)' },
                         ticks: {
                             color: '#9ca3af',
                             font: { family: 'Plus Jakarta Sans' },
-                            callback: function(value) { return value + '%'; }
+                            callback: function(value) { return value + tooltipSuffix; }
                         },
                         title: {
                             display: true,
-                            text: 'Total Penurunan (%)',
+                            text: yAxisLabel,
                             color: '#9ca3af',
-                            font: { family: 'Plus Jakarta Sans', size: 10 }
+                            font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
                         }
                     }
                 }
@@ -681,6 +813,266 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
+        });
+    }
+
+    function renderSchedules(logs) {
+        const grid = document.getElementById('official-schedule-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const MILESTONES = [
+            { name: 'Timbangan Awal', date: '2026-05-29', type: 'start', badgeClass: 'done', badgeText: 'Mulai' },
+            { name: 'Timbangan Antara I', date: '2026-06-12', type: 'antara', badgeClass: 'done', badgeText: 'Done ✓' },
+            { name: 'Timbangan Antara II', date: '2026-06-19', type: 'antara', badgeClass: 'nanti', badgeText: 'Nanti ⏳' },
+            { name: 'Timbangan Antara III', date: '2026-06-26', type: 'antara', badgeClass: 'nanti', badgeText: 'Nanti ⏳' },
+            { name: 'Timbangan Akhir', date: '2026-07-29', type: 'final', badgeClass: 'final', badgeText: 'Final 🏆' }
+        ];
+
+        MILESTONES.forEach(milestone => {
+            // Find logs for this date
+            const milestoneLogs = logs.filter(log => log.date === milestone.date);
+            const isCompleted = milestone.type === 'start' || milestoneLogs.length > 0;
+
+            const card = document.createElement('div');
+            card.className = `schedule-card ${isCompleted ? 'completed' : 'upcoming'}`;
+
+            // Format date to local Indonesian format
+            const formattedDate = new Date(milestone.date).toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            if (isCompleted) {
+                // Determine weights for each party
+                const getPartyData = (party, startWeight, shortName) => {
+                    let weight = null;
+                    if (milestone.type === 'start') {
+                        weight = startWeight;
+                    } else {
+                        const log = milestoneLogs.find(l => l.party === party);
+                        if (log) weight = log.weight;
+                    }
+
+                    if (weight === null) {
+                        return {
+                            shortName: shortName,
+                            weightText: 'Belum',
+                            lossText: '-',
+                            lossColor: 'var(--text-secondary)'
+                        };
+                    }
+
+                    const lossPct = ((startWeight - weight) / startWeight) * 100;
+                    const kgDiff = startWeight - weight;
+                    let lossText = '';
+                    let lossColor = '';
+
+                    if (milestone.type === 'start') {
+                        lossText = '0.0%';
+                        lossColor = 'var(--text-secondary)';
+                    } else {
+                        const kgText = kgDiff >= 0 ? `-${kgDiff.toFixed(1)}kg` : `+${Math.abs(kgDiff).toFixed(1)}kg`;
+                        const pctText = lossPct >= 0 ? `-${lossPct.toFixed(1)}%` : `+${Math.abs(lossPct).toFixed(1)}%`;
+                        lossText = `${kgText} (${pctText})`;
+                        lossColor = kgDiff >= 0 ? '#10b981' : '#ff3b70';
+                    }
+
+                    return {
+                        shortName: shortName,
+                        weightText: `${weight.toFixed(1)} kg`,
+                        lossText: lossText,
+                        lossColor: lossColor
+                    };
+                };
+
+                const purData = getPartyData('pur', START_WEIGHT_LU, 'Pur');
+                const stevhanData = getPartyData('stevhan', START_WEIGHT_TEMEN, 'Stev');
+                const dewaData = getPartyData('dewa', START_WEIGHT_DEWA, 'Dewa');
+
+                // Use a shorter date representation
+                const yearShort = new Date(milestone.date).getFullYear().toString().substr(-2);
+                const monthName = new Date(milestone.date).toLocaleDateString('id-ID', { month: 'short' });
+                const dayNum = new Date(milestone.date).getDate();
+                const shortDateText = `${dayNum} ${monthName} '${yearShort}`;
+
+                card.innerHTML = `
+                    <span class="status-badge done">${milestone.type === 'start' ? 'Mulai' : 'Done ✓'}</span>
+                    <h4 style="font-size: 0.85rem; font-weight: 700; margin-top: 0.15rem; margin-bottom: 0.1rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">${milestone.name}</h4>
+                    <span class="schedule-date" style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.6rem; display: block;">📅 ${shortDateText}</span>
+                    
+                    <div class="schedule-participants-list" style="display: flex; flex-direction: column; gap: 0.35rem; width: 100%;">
+                        <!-- Pur Row -->
+                        <div class="schedule-participant-row" style="display: flex; flex-direction: column; width: 100%; padding-bottom: 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 0.75rem; width: 100%; white-space: nowrap;">
+                                <span class="pur-text" style="font-weight: 700;">${purData.shortName}</span>
+                                <span style="font-family: monospace; color: #ffffff; font-weight: 600; white-space: nowrap;">${purData.weightText}</span>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; font-size: 0.65rem; font-weight: 700; font-family: monospace; color: ${purData.lossColor}; margin-top: -1px; white-space: nowrap;">
+                                ${purData.lossText}
+                            </div>
+                        </div>
+                        
+                        <!-- Stevhan Row -->
+                        <div class="schedule-participant-row" style="display: flex; flex-direction: column; width: 100%; padding-bottom: 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 0.75rem; width: 100%; white-space: nowrap;">
+                                <span class="stevhan-text" style="font-weight: 700;">${stevhanData.shortName}</span>
+                                <span style="font-family: monospace; color: #ffffff; font-weight: 600; white-space: nowrap;">${stevhanData.weightText}</span>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; font-size: 0.65rem; font-weight: 700; font-family: monospace; color: ${stevhanData.lossColor}; margin-top: -1px; white-space: nowrap;">
+                                ${stevhanData.lossText}
+                            </div>
+                        </div>
+
+                        <!-- Dewa Row -->
+                        <div class="schedule-participant-row" style="display: flex; flex-direction: column; width: 100%;">
+                            <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 0.75rem; width: 100%; white-space: nowrap;">
+                                <span class="dewa-text" style="font-weight: 700;">${dewaData.shortName}</span>
+                                <span style="font-family: monospace; color: #ffffff; font-weight: 600; white-space: nowrap;">${dewaData.weightText}</span>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; font-size: 0.65rem; font-weight: 700; font-family: monospace; color: ${dewaData.lossColor}; margin-top: -1px; white-space: nowrap;">
+                                ${dewaData.lossText}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Use a shorter date representation for upcoming milestones
+                const yearShort = new Date(milestone.date).getFullYear().toString().substr(-2);
+                const monthName = new Date(milestone.date).toLocaleDateString('id-ID', { month: 'short' });
+                const dayNum = new Date(milestone.date).getDate();
+                const shortDateText = `${dayNum} ${monthName} '${yearShort}`;
+
+                card.innerHTML = `
+                    <span class="status-badge ${milestone.badgeClass}">${milestone.badgeText}</span>
+                    <h4 style="font-size: 0.85rem; font-weight: 700; margin-top: 0.15rem; margin-bottom: 0.1rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%;">${milestone.name}</h4>
+                    <span class="schedule-date" style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.6rem; display: block;">📅 ${shortDateText}</span>
+                    
+                    <div class="upcoming-placeholder" style="padding: 1rem 0.25rem;">
+                        <span class="lock-icon" style="font-size: 1.2rem; margin-bottom: 0.25rem;">🔒</span>
+                        <p style="font-size: 0.65rem;">Menunggu jadwal timbangan resmi</p>
+                    </div>
+                `;
+            }
+
+            grid.appendChild(card);
+        });
+    }
+
+    function renderMilestoneChart(logs) {
+        const ctx = document.getElementById('milestone-chart').getContext('2d');
+        
+        const milestoneDates = ['2026-05-29', '2026-06-12', '2026-06-19', '2026-06-26', '2026-07-29'];
+        const milestoneLabels = ['Awal (29 Mei)', 'Antara I (12 Jun)', 'Antara II (19 Jun)', 'Antara III (26 Jun)', 'Akhir (29 Jul)'];
+
+        const dataPur = [START_WEIGHT_LU];
+        const dataStevhan = [START_WEIGHT_TEMEN];
+        const dataDewa = [START_WEIGHT_DEWA];
+
+        for (let i = 1; i < milestoneDates.length; i++) {
+            const dateStr = milestoneDates[i];
+            const logsPur = logs.filter(l => l.date === dateStr && l.party === 'pur');
+            const logsStevhan = logs.filter(l => l.date === dateStr && l.party === 'stevhan');
+            const logsDewa = logs.filter(l => l.date === dateStr && l.party === 'dewa');
+
+            if (logsPur.length > 0) {
+                dataPur.push(parseFloat(logsPur[logsPur.length - 1].weight.toFixed(1)));
+            } else {
+                dataPur.push(null);
+            }
+
+            if (logsStevhan.length > 0) {
+                dataStevhan.push(parseFloat(logsStevhan[logsStevhan.length - 1].weight.toFixed(1)));
+            } else {
+                dataStevhan.push(null);
+            }
+
+            if (logsDewa.length > 0) {
+                dataDewa.push(parseFloat(logsDewa[logsDewa.length - 1].weight.toFixed(1)));
+            } else {
+                dataDewa.push(null);
+            }
+        }
+
+        if (milestoneChart) {
+            milestoneChart.destroy();
+        }
+
+        milestoneChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: milestoneLabels,
+                datasets: [
+                    {
+                        label: 'Pur (Berat - kg)',
+                        data: dataPur,
+                        borderColor: '#00d2ff',
+                        backgroundColor: 'rgba(0, 210, 255, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#00d2ff',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 5,
+                        tension: 0.2,
+                        spanGaps: false
+                    },
+                    {
+                        label: 'Stevhan (Berat - kg)',
+                        data: dataStevhan,
+                        borderColor: '#ff3b70',
+                        backgroundColor: 'rgba(255, 59, 112, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ff3b70',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 5,
+                        tension: 0.2,
+                        spanGaps: false
+                    },
+                    {
+                        label: 'Dewa (Berat - kg)',
+                        data: dataDewa,
+                        borderColor: '#ffbd00',
+                        backgroundColor: 'rgba(255, 189, 0, 0.05)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffbd00',
+                        pointBorderColor: '#ffffff',
+                        pointRadius: 5,
+                        tension: 0.2,
+                        spanGaps: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#e5e7eb', font: { family: 'Plus Jakarta Sans', size: 10, weight: 'bold' } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.parsed.y === null) return '';
+                                return context.dataset.label.split(' ')[0] + ': ' + context.parsed.y.toFixed(1) + ' kg';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                        ticks: { color: '#9ca3af', font: { family: 'Plus Jakarta Sans', size: 9 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                        ticks: {
+                            color: '#9ca3af',
+                            font: { family: 'Plus Jakarta Sans', size: 9 },
+                            callback: function(value) { return value + ' kg'; }
+                        }
+                    }
+                }
+            }
         });
     }
 
@@ -777,6 +1169,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localLogs = data.weighIns || [];
             renderChart(localLogs);
             renderTable(localLogs);
+            renderSchedules(localLogs);
+            renderMilestoneChart(localLogs);
 
             // Confetti Trigger if all 3 are signed
             const allSigned = data.pur?.signed && data.stevhan?.signed && data.dewa?.signed;
@@ -792,6 +1186,8 @@ document.addEventListener('DOMContentLoaded', () => {
             applyUnsignedState('dewa');
             renderChart([]);
             renderTable([]);
+            renderSchedules([]);
+            renderMilestoneChart([]);
         }
     }, (error) => {
         console.error("Firestore sync error: ", error);

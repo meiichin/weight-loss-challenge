@@ -1200,15 +1200,256 @@ h1 {
     }
 }
 
-/* SCHEDULE CARDS */
+/* SCHEDULE CARDS REDESIGN */
+.schedule-grid {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+/* Responsive Grid Columns */
+@media (min-width: 1024px) {
+    .schedule-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+    .schedule-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 1rem !important;
+    }
+}
+@media (max-width: 767px) {
+    .schedule-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.25rem !important;
+    }
+}
+
 .schedule-card {
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(20, 24, 46, 0.45);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem 0.75rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.3s ease, 
+                box-shadow 0.3s ease, 
+                background-color 0.3s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    overflow: hidden;
 }
+
 .schedule-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    background: rgba(20, 24, 46, 0.6);
 }
+
+.schedule-card.completed {
+    background: rgba(16, 185, 129, 0.03);
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
 .schedule-card.completed:hover {
-    border-color: rgba(16, 185, 129, 0.5) !important;
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.4) !important;
+    background: rgba(16, 185, 129, 0.06);
+    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.08);
 }
+
+.schedule-card.upcoming {
+    opacity: 0.65;
+    border-style: dashed;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.schedule-card.upcoming:hover {
+    opacity: 0.95;
+    border-style: solid;
+    border-color: rgba(255, 189, 0, 0.3) !important;
+    box-shadow: 0 12px 24px rgba(255, 189, 0, 0.05);
+}
+
+.schedule-card .status-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 50px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.schedule-card .status-badge.done {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.schedule-card .status-badge.nanti {
+    background: rgba(255, 189, 0, 0.1);
+    color: #ffbd00;
+    border: 1px solid rgba(255, 189, 0, 0.25);
+}
+
+.schedule-card .status-badge.final {
+    background: linear-gradient(135deg, rgba(255, 59, 112, 0.2), rgba(255, 189, 0, 0.2));
+    color: #ff477e;
+    border: 1px solid rgba(255, 59, 112, 0.3);
+}
+
+.schedule-card h4 {
+    font-family: var(--font-heading);
+    margin-top: 0.5rem;
+    margin-bottom: 0.15rem;
+    font-size: 0.95rem;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.schedule-card .schedule-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Participant Progress Rows inside cards */
+.participant-progress-row {
+    margin-bottom: 0.75rem;
+}
+
+.participant-progress-row:last-child {
+    margin-bottom: 0.25rem;
+}
+
+.participant-progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.participant-progress-name {
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.participant-progress-val {
+    font-family: monospace;
+    font-weight: 700;
+}
+
+.participant-progress-val .percent-loss {
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 2px;
+}
+
+.participant-progress-bar-container {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.participant-progress-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0%; /* Set dynamically */
+    transition: width 1s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+/* Participant signature colors */
+.pur-text { color: var(--color-lu); }
+.pur-fill { 
+    background: var(--color-lu);
+    box-shadow: 0 0 6px var(--color-lu-glow);
+}
+
+.stevhan-text { color: var(--color-temen); }
+.stevhan-fill { 
+    background: var(--color-temen);
+    box-shadow: 0 0 6px var(--color-temen-glow);
+}
+
+.dewa-text { color: var(--color-gold); }
+.dewa-fill { 
+    background: var(--color-gold);
+    box-shadow: 0 0 6px var(--color-gold-glow);
+}
+
+/* Upcoming Empty State */
+.schedule-card.upcoming .upcoming-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0.5rem;
+    color: var(--text-secondary);
+    text-align: center;
+    border-radius: 12px;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.01);
+    margin-top: 0.5rem;
+    flex-grow: 1;
+}
+
+.schedule-card.upcoming .upcoming-placeholder .lock-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+    animation: pulseLock 2s infinite ease-in-out;
+}
+
+.schedule-card.upcoming .upcoming-placeholder p {
+    font-size: 0.7rem;
+    line-height: 1.3;
+}
+
+@keyframes pulseLock {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* CHART TAB BUTTONS */
+.chart-tab-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.5rem 1.1rem;
+    border-radius: 50px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: var(--font-body);
+}
+
+.chart-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.chart-tab-btn.active {
+    background: linear-gradient(135deg, #00d2ff, #ff3b70);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.25);
+}
+
+
