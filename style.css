@@ -1199,3 +1199,16 @@ h1 {
         font-size: 1.8rem;
     }
 }
+
+/* SCHEDULE CARDS */
+.schedule-card {
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.schedule-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+.schedule-card.completed:hover {
+    border-color: rgba(16, 185, 129, 0.5) !important;
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.05);
+}
